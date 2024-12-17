@@ -8,7 +8,7 @@ pub const Error = error{
 const commands = std.StaticStringMap(
     *const fn (CommandContext) void
 ).initComptime(.{
-    .{ "w", write },
+    .{ "c", commit },
     .{ "r", rollback },
     .{ "q", exit },
 });
@@ -66,15 +66,14 @@ pub fn CreateCommandContext(command: utils.String) !CommandContext {
     return context;
 }
 
-fn write(command: CommandContext) void {
-    _ = command;
+fn commit(context: CommandContext) void {
+    _ = context;
 }
 
-fn rollback(command: CommandContext) void {
-    _ = command;
+fn rollback(context: CommandContext) void {
+    _ = context;
 }
 
-fn exit(command: CommandContext) void {
-    _ = command;
+fn exit(_: CommandContext) void {
     std.process.exit(0);
 }
