@@ -1,13 +1,12 @@
-pub const Error = error{ Default, UnrecognizedCommand };
+pub const Error = error{ Default };
 pub const String = []const u8;
+pub const KeyValue = struct { K: String, V: String };
 
-pub fn TranslateError(e: Error) String {
-    switch (e) {
-        Error.UnrecognizedCommand => {
-            return "Unrecognized command";
-        },
-        else => {
-            return "Error";
-        },
+pub fn Contains(comptime T: type, array: []const T, item: T) bool {
+    for (array) |thing| {
+        if (thing == item) {
+            return true;
+        }
     }
+    return false;
 }

@@ -1,9 +1,28 @@
 const std = @import("std");
 const commands = @import("./commands.zig");
 const utils = @import("./utils.zig");
+const Error = error{
+    Default,
+    UnrecognizedCommand,
+    CommandParsing,
+};
 
 pub fn main() !void {
     try cli();
+}
+
+fn translateError(e: Error) utils.String {
+    switch (e) {
+        Error.UnrecognizedCommand => {
+            return "Unrecognized command";
+        },
+        Error.CommandParsing => {
+            return "Command parsing";
+        },
+        else => {
+            return "Error";
+        },
+    }
 }
 
 fn cli() !void {
