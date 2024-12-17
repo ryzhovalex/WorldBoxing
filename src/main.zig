@@ -48,7 +48,7 @@ fn cli() !void {
         std.mem.reverse(u8, slicedInput);
 
         commands.Execute(slicedInput) catch |e| {
-            try stdout.print("[Error] {s}\n", .{utils.TranslateError(e)});
+            try stdout.print("[Error] {s}\n", .{translateError(e)});
         };
     }
 }

@@ -4,17 +4,21 @@ pub const Error = error{
     UnrecognizedCommand,
     CommandParsing,
 };
-const commands = std.StaticStringMap(*const fn (CommandContext) void).initComptime(.{
+const commands = std.StaticStringMap(
+    *const fn (CommandContext) void
+).initComptime(.{
     .{ "w", write },
     .{ "r", rollback },
     .{ "q", exit },
 });
+const Command = [256]u8;
 const CommandContext = struct {
-    Raw: utils.String,
-    Target: utils.String,
-    Args: [32]utils.String,
+    Raw: Command,
+    Target: [32]u8,
+    Args: [32][32]u8,
     Kwargs: [32]utils.KeyValue,
 };
+
 
 pub fn Execute(command: utils.String) !void {
     const context = try CreateCommandContext(command);
@@ -26,8 +30,8 @@ pub fn Execute(command: utils.String) !void {
 }
 
 pub fn CreateCommandContext(command: utils.String) !CommandContext {
-    var target: [32]u8 = undefined;
-    var args: [32]utils.String = undefined;
+    var target = [_]u8{0} ** 32;
+    var args = [_]u8{0} ** 32;
     var kwargs: [32]utils.KeyValue = undefined;
     var argsIndex: u8 = 0;
     var kwargsIndex: u8 = 0;
@@ -61,7 +65,7 @@ pub fn CreateCommandContext(command: utils.String) !CommandContext {
 
     return CommandContext{
         .Raw = command,
-        .Target = &target,
+        .Target = target,
         .Args = args,
         .Kwargs = kwargs,
     };
