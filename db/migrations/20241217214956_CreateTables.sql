@@ -56,8 +56,7 @@ CREATE TABLE Fight(
     Fighter0Id INTEGER NOT NULL REFERENCES Person(Id),
     Fighter1Id INTEGER NOT NULL REFERENCES Person(Id),
     RefereeId INTEGER NOT NULL REFERENCES Person(Id),
-    ArenaId INTEGER NOT NULL,
-    FOREIGN KEY (ArenaId) REFERENCES Person(Id),
+    ArenaId INTEGER NOT NULL REFERENCES Person(Id),
 
     OfflineWatchers INTEGER NOT NULL,
     OnlineWatchers INTEGER NOT NULL,
