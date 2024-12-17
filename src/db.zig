@@ -6,7 +6,6 @@ pub fn Init() !void {
         .mode = sqlite.Db.Mode{ .File = "./var/main.db" },
         .open_flags = .{
             .write = true,
-            .create = true,
         },
         .threading_mode = .MultiThread,
     });
