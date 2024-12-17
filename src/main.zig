@@ -1,18 +1,35 @@
 const std = @import("std");
-const rl = @import("raylib");
+const commands = @import("./commands.zig");
+const utils = @import("./utils.zig");
 
 pub fn main() !void {
-    const screenWidth = 800;
-    const screenHeight = 450;
-    rl.initWindow(screenWidth, screenHeight, "World Boxing");
-    defer rl.closeWindow();
+    try cli();
+}
 
-    rl.setTargetFPS(30);
+fn cli() !void {
+    const stdout = std.io.getStdOut().writer();
+    const stdin = std.io.getStdIn().reader();
+    var buf: [255]u8 = undefined;
+    try stdout.print("Welcome to World Boxing!\n", .{});
+    while (true) {
+        try stdout.print("> ", .{});
+        const input = stdin.readUntilDelimiterOrEof(buf[0..], '\n') catch |e| {
+            try stdout.print("[Error] {any}\n", .{e});
+            continue;
+        } orelse {
+            break;
+        };
+        if (input.len == 1 and input[0] == 13) {
+            continue;
+        }
 
-    while (!rl.windowShouldClose()) {
-        rl.beginDrawing();
-        defer rl.endDrawing();
-        rl.clearBackground(rl.Color.white);
-        rl.drawText("Making boxing worldwide.", 190, 200, 20, rl.Color.light_gray);
+        // Remove latest `\n`.
+        std.mem.reverse(u8, input);
+        const slicedInput = input[1..];
+        std.mem.reverse(u8, slicedInput);
+
+        commands.Execute(slicedInput) catch |e| {
+            try stdout.print("[Error] {s}\n", .{utils.TranslateError(e)});
+        };
     }
 }
