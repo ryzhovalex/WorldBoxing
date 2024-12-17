@@ -16,9 +16,34 @@ CREATE TABLE Company(
     NetWorth FLOAT NOT NULL DEFAULT 0.0
 );
 
+CREATE TABLE FighterStyle(
+    Id INTEGER PRIMARY KEY,
+    -- In-Fighter
+    -- Out-Boxer
+    -- Slugger
+    -- Boxer-Puncher
+    -- https://en.wikipedia.org/wiki/Boxing_styles_and_technique
+    StyleKey TEXT UNIQUE NOT NULL,
+)
+
+CREATE TABLE FighterSkills(
+    Id INTEGER PRIMARY KEY,
+    PersonId INTEGER REFERENCES Person(Id),
+
+    Strength INTEGER NOT NULL,
+    Agility INTEGER NOT NULL,
+    Endurance INTEGER NOT NULL,
+    Speed INTEGER NOT NULL,
+    Intelligence INTEGER NOT NULL,
+
+    StyleId INTEGER REFERENCES FighterStyle(Id)
+);
+
 CREATE TABLE Person(
     Id INTEGER PRIMARY KEY,
     TypeId INTEGER REFERENCES PersonType(Id),
+
+    Rating INTEGER DEFAULT 0,
 
     Firstname TEXT NOT NULL,
     Surname TEXT NOT NULL,
@@ -70,6 +95,7 @@ CREATE TABLE Country(
 
 CREATE TABLE Fight(
     Id INTEGER PRIMARY KEY,
+    TimelineDay INTEGER,
 
     Fighter0Id INTEGER NOT NULL REFERENCES Person(Id),
     Fighter1Id INTEGER NOT NULL REFERENCES Person(Id),
