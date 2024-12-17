@@ -11,18 +11,17 @@ const commands = std.StaticStringMap(
     .{ "r", rollback },
     .{ "q", exit },
 });
-const Command = [256]u8;
 const CommandContext = struct {
-    Raw: Command,
-    Target: [32]u8,
-    Args: [32][32]u8,
-    Kwargs: [32]utils.KeyValue,
+    Raw: *const utils.String,
+    Target: *const utils.String,
+    Args: [32]*const utils.String,
+    Kwargs: [32]*const utils.KeyValue,
 };
 
 
 pub fn Execute(command: utils.String) !void {
     const context = try CreateCommandContext(command);
-    const function = commands.get(context.Target);
+    const function = commands.get(context.Target.*);
     if (function == null) {
         return Error.UnrecognizedCommand;
     }
@@ -30,9 +29,12 @@ pub fn Execute(command: utils.String) !void {
 }
 
 pub fn CreateCommandContext(command: utils.String) !CommandContext {
-    var target = [_]u8{0} ** 32;
-    var args = [_]u8{0} ** 32;
-    var kwargs: [32]utils.KeyValue = undefined;
+    var context = CommandContext{
+        .Raw = &command,
+        .Target = undefined,
+        .Args = undefined,
+        .Kwargs = undefined,
+    };
     var argsIndex: u8 = 0;
     var kwargsIndex: u8 = 0;
 
@@ -48,27 +50,20 @@ pub fn CreateCommandContext(command: utils.String) !CommandContext {
             var kwargSplitIterator = std.mem.splitScalar(u8, part, '=');
             const key = kwargSplitIterator.next() orelse return utils.Error.Default;
             const value = kwargSplitIterator.next() orelse return utils.Error.Default;
-            kwargs[kwargsIndex] = utils.KeyValue{.K=key, .V=value};
+            context.Kwargs[kwargsIndex] = &utils.KeyValue{.K=key, .V=value};
             kwargsIndex += 1;
             continue;
         }
         if (firstPart) {
-            for (part, 0..) |partChar, i| {
-                target[i] = partChar;
-            }
+            context.Target = &part;
             firstPart = false;
             continue;
         }
-        args[argsIndex] = part;
+        context.Args[argsIndex] = &part;
         argsIndex += 1;
     }
 
-    return CommandContext{
-        .Raw = command,
-        .Target = target,
-        .Args = args,
-        .Kwargs = kwargs,
-    };
+    return context;
 }
 
 fn write(command: CommandContext) void {
