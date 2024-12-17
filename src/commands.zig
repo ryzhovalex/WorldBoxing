@@ -1,5 +1,6 @@
 const std = @import("std");
 const utils = @import("./utils.zig");
+const db = @import("./db.zig");
 pub const Error = error{
     UnrecognizedCommand,
     CommandParsing,
@@ -17,7 +18,6 @@ const CommandContext = struct {
     Args: [32]*const utils.String,
     Kwargs: [32]*const utils.KeyValue,
 };
-
 
 pub fn Execute(command: utils.String) !void {
     const context = try CreateCommandContext(command);

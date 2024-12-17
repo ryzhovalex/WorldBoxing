@@ -1,6 +1,7 @@
 const std = @import("std");
 const commands = @import("./commands.zig");
 const utils = @import("./utils.zig");
+const db = @import("./db.zig");
 const Error = error{
     Default,
     UnrecognizedCommand,
@@ -8,6 +9,7 @@ const Error = error{
 };
 
 pub fn main() !void {
+    try db.Init();
     try cli();
 }
 
