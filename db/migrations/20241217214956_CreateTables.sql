@@ -58,17 +58,23 @@ CREATE TABLE Timeline(
     CurrentDay INTEGER
 );
 
-CREATE TABLE WorldEventType(
+CREATE TABLE StateEventType(
     Id INTEGER PRIMARY KEY,
     TypeKey TEXT UNIQUE NOT NULL
 );
 
-CREATE TABLE WorldEvent(
-    -- Id serve as event order.
+CREATE TABLE World(
     Id INTEGER PRIMARY KEY,
-    TypeId INTEGER NOT NULL REFERENCES WorldEventType(Id),
+    LastProcessedStateEventId INTEGER REFERENCES StateEvent(Id)
+);
+
+CREATE TABLE StateEvent(
+    -- Id serves as StateEvent order.
+    Id INTEGER PRIMARY KEY,
+    TypeId INTEGER NOT NULL REFERENCES StateEventType(Id),
     Body JSONB,
-    TimelineDay INTEGER
+    TimelineDay INTEGER,
+    TimeMs INTEGER
 );
 
 CREATE TABLE RoundEndType(
