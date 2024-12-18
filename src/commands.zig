@@ -5,7 +5,7 @@ const core = @import("./core.zig");
 const simulation = @import("./simulation.zig");
 
 const commands = std.StaticStringMap(
-    *const fn (CommandContext) void
+    *const fn (CommandContext) ?core.Error
 ).initComptime(.{
     .{ "c", commit },
     .{ "r", rollback },
@@ -20,29 +20,33 @@ const CommandContext = struct {
     Kwargs: [32]*const utils.KeyValue,
 };
 
-fn simulationCreateWorld(_: CommandContext) void {
-    simulation.CreateWorld();
+fn simulationCreateWorld(_: CommandContext) ?core.Error {
+    simulation.CreateWorld() catch return core.Error.Default;
+    return null;
 }
 
-fn commit(_: CommandContext) void {
-    db.Commit();
+fn commit(_: CommandContext) ?core.Error {
+    db.Commit() catch return core.Error.Default;
+    return null;
 }
 
-fn rollback(_: CommandContext) void {
-    db.Rollback();
+fn rollback(_: CommandContext) ?core.Error {
+    db.Rollback() catch return core.Error.Default;
+    return null;
 }
 
-fn exit(_: CommandContext) void {
+fn exit(_: CommandContext) ?core.Error {
     std.process.exit(0);
+    return null;
 }
 
 pub fn Execute(command: utils.String) !void {
     const context = try CreateCommandContext(command);
-    const function = commands.get(context.Target.*);
-    if (function == null) {
-        return core.Error.UnrecognizedCommand;
+    const function = commands.get(context.Target.*) orelse return core.Error.UnrecognizedCommand;
+    const e = function(context);
+    if (e != null) {
+        return e;
     }
-    function.?(context);
 }
 
 pub fn CreateCommandContext(command: utils.String) !CommandContext {

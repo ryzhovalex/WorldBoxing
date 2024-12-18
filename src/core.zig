@@ -6,7 +6,7 @@ pub const Codes = enum(i16){
 
     Error = 1,
 };
-const Error = error{
+pub const Error = error{
     Default,
     UnrecognizedCommand,
     CommandParsing,
