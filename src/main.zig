@@ -3,9 +3,11 @@ const Commands = @import("./Commands.zig");
 const Utils = @import("./Lib/Utils.zig");
 const Database = @import("./Lib/Database.zig");
 const Core = @import("./Core.zig");
+const Orwynn = @import("./Lib/Orwynn.zig");
 
 pub fn main() !void {
     try Database.Init();
+    try Orwynn.Init();
     try cli();
 }
 

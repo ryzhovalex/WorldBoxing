@@ -5,7 +5,7 @@ const Core = @import("./Core.zig");
 const Simulation = @import("./Simulation.zig");
 
 const commands = std.StaticStringMap(
-    *const fn (CommandContext) ?Core.Error
+    *const fn (CommandContext) ?anyerror
 ).initComptime(.{
     .{ "c", commit },
     .{ "r", rollback },
