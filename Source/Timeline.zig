@@ -1,5 +1,5 @@
-const db = @import("./Database.zig");
-const utils = @import("./utils.zig");
+const db = @import("./Lib/Database.zig");
+const utils = @import("./Lib/Utils.zig");
 pub const Day = u32;
 const currentDay: ?Day = null;
 

@@ -25,9 +25,10 @@ pub fn Create(
     db.Session.insert(
         Person,
         .{
-        .Firstname = data.Firstname,
-        .Surname = data.Surname,
-        .CityId = data.CityId,
-        .BornDay = try timeline.GetCurrentDay()
-    });
+            .Firstname = data.Firstname,
+            .Surname = data.Surname,
+            .CityId = data.CityId,
+            .BornDay = try timeline.GetCurrentDay()
+        }
+    );
 }

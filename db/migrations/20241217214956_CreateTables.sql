@@ -73,8 +73,8 @@ CREATE TABLE StateEvent(
     Id INTEGER PRIMARY KEY,
     TypeId INTEGER NOT NULL REFERENCES StateEventType(Id),
     Body JSONB,
-    TimelineDay INTEGER,
-    TimeMs INTEGER
+    TimeMs INTEGER NOT NULL,
+    TimelineDay INTEGER NOT NULL,
 );
 
 CREATE TABLE RoundEndType(

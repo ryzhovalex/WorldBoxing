@@ -1,7 +1,7 @@
 const std = @import("std");
 const Commands = @import("./Commands.zig");
 const Utils = @import("./Lib/Utils.zig");
-const Database = @import("./Database.zig");
+const Database = @import("./Lib/Database.zig");
 const Core = @import("./Core.zig");
 
 pub fn main() !void {

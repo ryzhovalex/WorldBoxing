@@ -1,4 +1,4 @@
-const Db = @import("./Database.zig");
+const Db = @import("./Lib/Database.zig");
 const Utils = @import("./Lib/Utils.zig");
 const Timeline = @import("./Timeline.zig");
 pub const Error = error{
