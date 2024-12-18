@@ -1,12 +1,21 @@
-const sqlite = @import("sqlite");
-var db: *const sqlite.Db = undefined;
+const std = @import("std");
+const db = @import("fridge");
+pub var Session: db.Session = undefined;
+pub const Id = u32;
 
 pub fn Init() !void {
-    db = &try sqlite.Db.init(.{
-        .mode = sqlite.Db.Mode{ .File = "./var/main.db" },
-        .open_flags = .{
-            .write = true,
-        },
-        .threading_mode = .MultiThread,
-    });
+    const allocator = std.heap.page_allocator;
+    Session = try db.Session.open(
+        db.SQLite3, allocator, .{ .filename = "var/main.db" }
+    );
+    defer Session.deinit();
+    try Session.exec("BEGIN", .{});
+}
+
+pub fn Commit() !void {
+    try Session.exec("COMMIT", .{});
+}
+
+pub fn Rollback() !void {
+    try Session.exec("ROLLBACK", .{});
 }

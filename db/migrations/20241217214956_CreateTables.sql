@@ -41,7 +41,7 @@ CREATE TABLE FighterSkills(
 
 CREATE TABLE Person(
     Id INTEGER PRIMARY KEY,
-    TypeId INTEGER REFERENCES PersonType(Id),
+    TypeId INTEGER NOT NULL REFERENCES PersonType(Id),
 
     Rating INTEGER DEFAULT 0,
 

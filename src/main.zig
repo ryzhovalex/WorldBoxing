@@ -2,23 +2,19 @@ const std = @import("std");
 const commands = @import("./commands.zig");
 const utils = @import("./utils.zig");
 const db = @import("./db.zig");
-const Error = error{
-    Default,
-    UnrecognizedCommand,
-    CommandParsing,
-};
+const core = @import("./core.zig");
 
 pub fn main() !void {
     try db.Init();
     try cli();
 }
 
-fn translateError(e: Error) utils.String {
+fn translateError(e: core.Error) utils.String {
     switch (e) {
-        Error.UnrecognizedCommand => {
+        core.Error.UnrecognizedCommand => {
             return "Unrecognized command";
         },
-        Error.CommandParsing => {
+        core.Error.CommandParsing => {
             return "Command parsing";
         },
         else => {

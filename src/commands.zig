@@ -1,16 +1,17 @@
 const std = @import("std");
 const utils = @import("./utils.zig");
 const db = @import("./db.zig");
-pub const Error = error{
-    UnrecognizedCommand,
-    CommandParsing,
-};
+const core = @import("./core.zig");
+const simulation = @import("./simulation.zig");
+
 const commands = std.StaticStringMap(
     *const fn (CommandContext) void
 ).initComptime(.{
     .{ "c", commit },
     .{ "r", rollback },
     .{ "q", exit },
+
+    .{ "simulation.CreateWorld", simulationCreateWorld },
 });
 const CommandContext = struct {
     Raw: *const utils.String,
@@ -19,11 +20,27 @@ const CommandContext = struct {
     Kwargs: [32]*const utils.KeyValue,
 };
 
+fn simulationCreateWorld(_: CommandContext) void {
+    simulation.CreateWorld();
+}
+
+fn commit(_: CommandContext) void {
+    db.Commit();
+}
+
+fn rollback(_: CommandContext) void {
+    db.Rollback();
+}
+
+fn exit(_: CommandContext) void {
+    std.process.exit(0);
+}
+
 pub fn Execute(command: utils.String) !void {
     const context = try CreateCommandContext(command);
     const function = commands.get(context.Target.*);
     if (function == null) {
-        return Error.UnrecognizedCommand;
+        return core.Error.UnrecognizedCommand;
     }
     function.?(context);
 }
@@ -45,7 +62,7 @@ pub fn CreateCommandContext(command: utils.String) !CommandContext {
         if (utils.Contains(u8, part, '=')) {
             if (firstPart) {
                 // first part cannot be kwarg
-                return Error.CommandParsing;
+                return core.Error.CommandParsing;
             }
             var kwargSplitIterator = std.mem.splitScalar(u8, part, '=');
             const key = kwargSplitIterator.next() orelse return utils.Error.Default;
@@ -64,16 +81,4 @@ pub fn CreateCommandContext(command: utils.String) !CommandContext {
     }
 
     return context;
-}
-
-fn commit(context: CommandContext) void {
-    _ = context;
-}
-
-fn rollback(context: CommandContext) void {
-    _ = context;
-}
-
-fn exit(_: CommandContext) void {
-    std.process.exit(0);
 }

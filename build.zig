@@ -91,4 +91,8 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     exe.root_module.addImport("sqlite", sqlite.module("sqlite"));
+
+    // Use .bundle = false if you want to link system SQLite3
+    const fridge = b.dependency("fridge", .{ .bundle = true });
+    exe.root_module.addImport("fridge", fridge.module("fridge"));
 }
