@@ -1,6 +1,6 @@
-const db = @import("./Database.zig");
-const utils = @import("./utils.zig");
-const timeline = @import("./timeline.zig");
+const db = @import("./Lib/Database.zig");
+const utils = @import("./Lib/Utils.zig");
+const timeline = @import("./Lib/Timeline.zig");
 
 pub const Person = struct {
     Id: db.Id,

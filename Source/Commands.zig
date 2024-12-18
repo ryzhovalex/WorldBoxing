@@ -1,6 +1,6 @@
 const std = @import("std");
 const Utils = @import("./Lib/Utils.zig");
-const Database = @import("./Database.zig");
+const Database = @import("./Lib/Database.zig");
 const Core = @import("./Core.zig");
 const Simulation = @import("./Simulation.zig");
 

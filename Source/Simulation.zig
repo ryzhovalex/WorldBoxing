@@ -1,6 +1,6 @@
-const db = @import("./Database.zig");
-const utils = @import("./utils.zig");
-const timeline = @import("./timeline.zig");
+const Db = @import("./Database.zig");
+const Utils = @import("./Lib/Utils.zig");
+const Timeline = @import("./Timeline.zig");
 pub const Error = error{
     WorldAlreadyCreated,
 };
@@ -8,7 +8,7 @@ pub const Error = error{
 pub fn CreateWorld() !void {
     // Timeline shouldn't exists for the world to be considered as not created
     // yet.
-    const timelineRow = db.Session.query(timeline.Timeline).findFirst() catch {
+    const timelineRow = Db.Session.query(Timeline.Timeline).findFirst() catch {
         return try createWorld();
     };
     if (timelineRow == null) {
@@ -21,7 +21,7 @@ fn createWorld() !void {
 }
 
 fn createTimeline() !void {
-    try db.Session.insert(timeline.Timeline, .{
+    try Db.Session.insert(Timeline.Timeline, .{
         .CurrentDay = 0,
     });
 }
