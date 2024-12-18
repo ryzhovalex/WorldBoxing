@@ -1,13 +1,13 @@
 const std = @import("std");
-const Commands = @import("./Commands.zig");
-const Utils = @import("./lib/Utils.zig");
-const Database = @import("./lib/Database.zig");
-const Core = @import("./Core.zig");
-const Orwynn = @import("./lib/Orwynn.zig");
+const commands = @import("./commands.zig");
+const utils = @import("./lib/utils.zig");
+const db = @import("./lib/database.zig");
+const core = @import("./core.zig");
+const orwynn = @import("./lib/orwynn.zig");
 
 pub fn main() !void {
-    try Database.Init();
-    try Orwynn.Init();
+    try db.Init();
+    try orwynn.Init();
     try cli();
 }
 
@@ -33,9 +33,9 @@ fn cli() !void {
         const slicedInput = input[1..];
         std.mem.reverse(u8, slicedInput);
 
-        const e = Commands.Execute(slicedInput);
+        const e = commands.Execute(slicedInput);
         if (e != null) {
-            try stdout.print("[Error] {s}\n", .{Core.TranslateError(e.?)});
+            try stdout.print("[Error] {s}\n", .{core.TranslateError(e.?)});
         }
     }
 }

@@ -1,11 +1,11 @@
 const std = @import("std");
-const Driver = @import("fridge");
-pub var Session: Driver.Session = undefined;
+const driver = @import("fridge");
+pub var Session: driver.Session = undefined;
 pub const Id = u32;
 
 pub fn Init() !void {
-    Session = try Driver.Session.open(
-        Driver.SQLite3,
+    Session = try driver.Session.open(
+        driver.SQLite3,
         std.heap.page_allocator,
         .{
             .filename = "var/main.db"
