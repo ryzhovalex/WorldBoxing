@@ -31,8 +31,9 @@ fn cli() !void {
         const slicedInput = input[1..];
         std.mem.reverse(u8, slicedInput);
 
-        Commands.Execute(slicedInput) catch |e| {
-            try stdout.print("[Error] {s}\n", .{Core.TranslateError(e)});
-        };
+        const e = Commands.Execute(slicedInput);
+        if (e != null) {
+            try stdout.print("[Error] {s}\n", .{Core.TranslateError(e.?)});
+        }
     }
 }

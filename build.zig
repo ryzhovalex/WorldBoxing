@@ -75,24 +75,9 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&run_lib_unit_tests.step);
     test_step.dependOn(&run_exe_unit_tests.step);
 
-    const raylibDep = b.dependency("raylib-zig", .{
-        .target = target,
-        .optimize = optimize,
-    });
-    const raylib = raylibDep.module("raylib");
-    const raygui = raylibDep.module("raygui");
-    const raylibArtifact = raylibDep.artifact("raylib");
-    exe.linkLibrary(raylibArtifact);
-    exe.root_module.addImport("raylib", raylib);
-    exe.root_module.addImport("raygui", raygui);
-
     const sqlite = b.dependency("sqlite", .{
         .target = target,
         .optimize = optimize,
     });
     exe.root_module.addImport("sqlite", sqlite.module("sqlite"));
-
-    // Use .bundle = false if you want to link system SQLite3
-    const fridge = b.dependency("fridge", .{ .bundle = true });
-    exe.root_module.addImport("fridge", fridge.module("fridge"));
 }

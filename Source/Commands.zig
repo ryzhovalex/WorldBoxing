@@ -40,13 +40,13 @@ fn exit(_: CommandContext) ?Core.Error {
     return null;
 }
 
-pub fn Execute(command: Utils.String) !void {
-    const context = try CreateCommandContext(command);
+pub fn Execute(command: Utils.String) ?anyerror {
+    const context = CreateCommandContext(command) catch |e| {
+        return e;
+    };
     const function = commands.get(context.Target.*) orelse return Core.Error.UnrecognizedCommand;
     const e = function(context);
-    if (e != null) {
-        return e;
-    }
+    return e;
 }
 
 pub fn CreateCommandContext(command: Utils.String) !CommandContext {
