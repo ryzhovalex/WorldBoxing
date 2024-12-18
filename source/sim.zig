@@ -1,5 +1,5 @@
-const Db = @import("./lib/Database.zig");
-const Utils = @import("./lib/Utils.zig");
+const Db = @import("./lib/database.zig");
+const Utils = @import("./lib/utils.zig");
 const Timeline = @import("./Timeline.zig");
 pub const Error = error{
     WorldAlreadyCreated,
