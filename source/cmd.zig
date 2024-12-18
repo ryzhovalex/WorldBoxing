@@ -1,8 +1,8 @@
 const std = @import("std");
 const utils = @import("./lib/utils.zig");
-const Database = @import("./lib/database.zig");
-const Core = @import("./Core.zig");
-const Simulation = @import("./Simulation.zig");
+const db = @import("./lib/database.zig");
+const core = @import("./core.zig");
+const sim = @import("./sim.zig");
 
 const commands = std.StaticStringMap(
     *const fn (CommandContext) ?anyerror
@@ -20,22 +20,22 @@ const CommandContext = struct {
     Kwargs: [32]*const utils.KeyValue,
 };
 
-fn simulationCreateWorld(_: CommandContext) ?Core.Error {
-    Simulation.CreateWorld() catch return Core.Error.Default;
+fn simulationCreateWorld(_: CommandContext) ?core.Error {
+    sim.CreateWorld() catch return core.Error.Default;
     return null;
 }
 
-fn commit(_: CommandContext) ?Core.Error {
-    Database.Commit() catch return Core.Error.Default;
+fn commit(_: CommandContext) ?core.Error {
+    db.Commit() catch return core.Error.Default;
     return null;
 }
 
-fn rollback(_: CommandContext) ?Core.Error {
-    Database.Rollback() catch return Core.Error.Default;
+fn rollback(_: CommandContext) ?core.Error {
+    db.Rollback() catch return core.Error.Default;
     return null;
 }
 
-fn exit(_: CommandContext) ?Core.Error {
+fn exit(_: CommandContext) ?core.Error {
     std.process.exit(0);
     return null;
 }
@@ -44,7 +44,7 @@ pub fn Execute(command: utils.String) ?anyerror {
     const context = CreateCommandContext(command) catch |e| {
         return e;
     };
-    const function = commands.get(context.Target.*) orelse return Core.Error.UnrecognizedCommand;
+    const function = commands.get(context.Target.*) orelse return core.Error.UnrecognizedCommand;
     const e = function(context);
     return e;
 }
@@ -66,7 +66,7 @@ pub fn CreateCommandContext(command: utils.String) !CommandContext {
         if (utils.Contains(u8, part, '=')) {
             if (firstPart) {
                 // first part cannot be kwarg
-                return Core.Error.CommandParsing;
+                return core.Error.CommandParsing;
             }
             var kwargSplitIterator = std.mem.splitScalar(u8, part, '=');
             const key = kwargSplitIterator.next() orelse return utils.Error.Default;
