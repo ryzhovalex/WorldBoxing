@@ -11,8 +11,11 @@ pub fn Init() !void {
             .filename = "var/main.db"
         }
     );
-    defer Session.deinit();
     try Session.exec("BEGIN", .{});
+}
+
+pub fn Deinit() void {
+    Session.deinit();
 }
 
 pub fn Commit() !void {

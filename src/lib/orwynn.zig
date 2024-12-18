@@ -5,37 +5,34 @@ const MessageQueue = struct {
     const Self = @This();
     const Node = struct {
         value: *const Message,
-        next: *const Node,
+        next: ?*Node,
     };
 
-    front: *const Node,
-    back: *const Node,
-    currentSize: i32,
+    front: ?*Node = null,
+    back: ?*Node = null,
+    currentSize: i32 = 0,
     maxSize: i32,
 
-    pub fn New() Self {
-        return MessageQueue{
-            .front = undefined,
-            .back = undefined,
-            .currentSize = 0,
-            .maxSize = MessageQueueMaxSize,
-        };
+    pub fn New(allocator: std.mem.Allocator) *Self {
+        var queue = try allocator.create(MessageQueue);
+        queue.maxSize = MessageQueueMaxSize;
+        return queue;
     }
 
     pub fn Enqueue(self: *Self, message: *const Message) !void {
         if (self.IsFull()) {
             return Error.MessageQueueFull;
         }
-        const newNode = Node{
+        var newNode = Node{
             .value = message,
-            .next = undefined,
+            .next = null,
         };
-        if (self.front == undefined and self.back == undefined) {
-            self.front = newNode;
-            self.back = newNode;
+        if (self.front == null and self.back == null) {
+            self.front = &newNode;
+            self.back = &newNode;
             return;
         }
-        self.back.next = &newNode;
+        self.back.?.next = &newNode;
         self.currentSize += 1;
     }
 
@@ -44,11 +41,8 @@ const MessageQueue = struct {
             return Error.MessageQueueEmpty;
         }
         const value = self.front.value;
-        if (self.front.next != undefined) {
-            self.front = self.front.next;
-        } else {
-            self.front = undefined;
-        }
+        // for the last element of the queue, the front will be set to null
+        self.front = self.front.next;
         self.currentSize -= 1;
         return value;
     }
@@ -66,9 +60,9 @@ const MessageQueue = struct {
     }
 };
 const State = struct {
-    MessageQueue: MessageQueue,
+    MessageQueue: *MessageQueue,
 };
-var state: *State = undefined;
+var state: ?*State = null;
 pub const MessageCode = i16;
 pub const Error = error{
     MessageQueueFull,
@@ -77,16 +71,22 @@ pub const Error = error{
 
 pub const Message = struct {
     Code: MessageCode,
-    Body: []i32,
+    Body: ?[]i32,
 };
 
 pub const Subscriber = *const fn (*Message) ?anyerror;
 
 pub fn Init() !void {
+    const allocator = std.heap.page_allocator;
     var s = State{
-        .MessageQueue = MessageQueue.New(),
+        .MessageQueue = MessageQueue.New(allocator),
     };
     state = &s;
+}
+
+pub fn Deinit() void {
+    std.heap.page_allocator.destroy(state.?);
+    state = null;
 }
 
 pub fn Publish(code: MessageCode, body: []i32) !void {
@@ -100,18 +100,26 @@ pub fn Subscribe(code: MessageCode) !void {
 
 test "init" {
     try Init();
-    try std.testing.expect(state.MessageQueue.front == undefined);
-    try std.testing.expect(state.MessageQueue.back == undefined);
-    try std.testing.expect(state.MessageQueue.currentSize == 0);
-    try std.testing.expect(state.MessageQueue.maxSize == MessageQueueMaxSize);
+    defer Deinit();
+
+    try std.testing.expect(state.?.MessageQueue.front == null);
+    try std.testing.expect(state.?.MessageQueue.back == null);
+    try std.testing.expect(state.?.MessageQueue.currentSize == 0);
+    try std.testing.expect(state.?.MessageQueue.maxSize == MessageQueueMaxSize);
 }
 
 test "enqueue message" {
     try Init();
-    state.MessageQueue.Enqueue(&Message{
+    defer Deinit();
+
+    var queue = state.?.MessageQueue;
+    const message = &Message{
         .Code = 0,
-        .Body = undefined,
-    });
-    std.testing.expect(state.MessageQueue.front != undefined);
-    std.testing.expect(state.MessageQueue.back != undefined);
+        .Body = null,
+    };
+    try queue.Enqueue(message);
+    const front = queue.front orelse unreachable;
+    const back = queue.back orelse unreachable;
+    try std.testing.expect(front == back);
+    try std.testing.expect(front.value == message);
 }

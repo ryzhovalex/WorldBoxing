@@ -7,7 +7,10 @@ const orwynn = @import("./lib/orwynn.zig");
 
 pub fn main() !void {
     try db.Init();
+    defer db.Deinit();
     try orwynn.Init();
+    defer orwynn.Deinit();
+
     try cli();
 }
 
