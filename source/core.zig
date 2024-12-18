@@ -1,5 +1,5 @@
-const Orwynn = @import("./Lib/Orwynn.zig");
-const Utils = @import("./Lib/Utils.zig");
+const Orwynn = @import("./lib/Orwynn.zig");
+const Utils = @import("./lib/Utils.zig");
 
 pub const Code = enum(Orwynn.MessageCode) {
     PersonCreated = -2,

@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const QueueMaxSize = 65536;
+const MessageQueueMaxSize = 65536;
 const MessageQueue = struct {
     const Self = @This();
     const Node = struct {
@@ -18,7 +18,7 @@ const MessageQueue = struct {
             .front = undefined,
             .back = undefined,
             .currentSize = 0,
-            .maxSize = QueueMaxSize,
+            .maxSize = MessageQueueMaxSize,
         };
     }
 
@@ -36,6 +36,7 @@ const MessageQueue = struct {
             return;
         }
         self.back.next = &newNode;
+        self.currentSize += 1;
     }
 
     pub fn Dequeue(self: *Self) !*const Message {
@@ -48,6 +49,7 @@ const MessageQueue = struct {
         } else {
             self.front = undefined;
         }
+        self.currentSize -= 1;
         return value;
     }
 
@@ -66,7 +68,7 @@ const MessageQueue = struct {
 const State = struct {
     MessageQueue: MessageQueue,
 };
-var state: *const State = undefined;
+var state: *State = undefined;
 pub const MessageCode = i16;
 pub const Error = error{
     MessageQueueFull,
@@ -81,9 +83,10 @@ pub const Message = struct {
 pub const Subscriber = *const fn (*Message) ?anyerror;
 
 pub fn Init() !void {
-    state = &State{
+    var s = State{
         .MessageQueue = MessageQueue.New(),
     };
+    state = &s;
 }
 
 pub fn Publish(code: MessageCode, body: []i32) !void {
@@ -97,6 +100,18 @@ pub fn Subscribe(code: MessageCode) !void {
 
 test "Init" {
     try Init();
-    try std.testing.expect(state.*.MessageQueue.backIndex == 0);
-    try std.testing.expect(state.*.MessageQueue.frontIndex == -1);
+    try std.testing.expect(state.MessageQueue.front == undefined);
+    try std.testing.expect(state.MessageQueue.back == undefined);
+    try std.testing.expect(state.MessageQueue.currentSize == 0);
+    try std.testing.expect(state.MessageQueue.maxSize == MessageQueueMaxSize);
+}
+
+test "Enqueue message" {
+    try Init();
+    state.MessageQueue.Enqueue(&Message{
+        .Code = 0,
+        .Body = undefined,
+    });
+    std.testing.expect(state.MessageQueue.front != undefined);
+    std.testing.expect(state.MessageQueue.back != undefined);
 }

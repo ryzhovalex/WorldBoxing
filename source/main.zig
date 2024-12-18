@@ -1,9 +1,9 @@
 const std = @import("std");
 const Commands = @import("./Commands.zig");
-const Utils = @import("./Lib/Utils.zig");
-const Database = @import("./Lib/Database.zig");
+const Utils = @import("./lib/Utils.zig");
+const Database = @import("./lib/Database.zig");
 const Core = @import("./Core.zig");
-const Orwynn = @import("./Lib/Orwynn.zig");
+const Orwynn = @import("./lib/Orwynn.zig");
 
 pub fn main() !void {
     try Database.Init();

@@ -1,6 +1,6 @@
 const std = @import("std");
-const Utils = @import("./Lib/Utils.zig");
-const Database = @import("./Lib/Database.zig");
+const utils = @import("./lib/utils.zig");
+const Database = @import("./lib/database.zig");
 const Core = @import("./Core.zig");
 const Simulation = @import("./Simulation.zig");
 
@@ -14,10 +14,10 @@ const commands = std.StaticStringMap(
     .{ "simulation.CreateWorld", simulationCreateWorld },
 });
 const CommandContext = struct {
-    Raw: *const Utils.String,
-    Target: *const Utils.String,
-    Args: [32]*const Utils.String,
-    Kwargs: [32]*const Utils.KeyValue,
+    Raw: *const utils.String,
+    Target: *const utils.String,
+    Args: [32]*const utils.String,
+    Kwargs: [32]*const utils.KeyValue,
 };
 
 fn simulationCreateWorld(_: CommandContext) ?Core.Error {
@@ -40,7 +40,7 @@ fn exit(_: CommandContext) ?Core.Error {
     return null;
 }
 
-pub fn Execute(command: Utils.String) ?anyerror {
+pub fn Execute(command: utils.String) ?anyerror {
     const context = CreateCommandContext(command) catch |e| {
         return e;
     };
@@ -49,7 +49,7 @@ pub fn Execute(command: Utils.String) ?anyerror {
     return e;
 }
 
-pub fn CreateCommandContext(command: Utils.String) !CommandContext {
+pub fn CreateCommandContext(command: utils.String) !CommandContext {
     var context = CommandContext{
         .Raw = &command,
         .Target = undefined,
@@ -63,15 +63,15 @@ pub fn CreateCommandContext(command: Utils.String) !CommandContext {
 
     var firstPart = true;
     while (splitIterator.next()) |part| {
-        if (Utils.Contains(u8, part, '=')) {
+        if (utils.Contains(u8, part, '=')) {
             if (firstPart) {
                 // first part cannot be kwarg
                 return Core.Error.CommandParsing;
             }
             var kwargSplitIterator = std.mem.splitScalar(u8, part, '=');
-            const key = kwargSplitIterator.next() orelse return Utils.Error.Default;
-            const value = kwargSplitIterator.next() orelse return Utils.Error.Default;
-            context.Kwargs[kwargsIndex] = &Utils.KeyValue{.K=key, .V=value};
+            const key = kwargSplitIterator.next() orelse return utils.Error.Default;
+            const value = kwargSplitIterator.next() orelse return utils.Error.Default;
+            context.Kwargs[kwargsIndex] = &utils.KeyValue{.K=key, .V=value};
             kwargsIndex += 1;
             continue;
         }

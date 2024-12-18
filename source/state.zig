@@ -1,5 +1,5 @@
-const Db = @import("./Lib/Database.zig");
-const Utils = @import("./Lib/Utils.zig");
+const Db = @import("./lib/Database.zig");
+const Utils = @import("./lib/Utils.zig");
 const Timeline = @import("./Timeline.zig");
 
 pub const StateEvent = struct {
