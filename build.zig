@@ -1,7 +1,7 @@
 const std = @import("std");
 const ModulePaths = [_][]const u8{
     "src/main.zig",
-    "src/lib/Orwynn.zig",
+    "src/lib/orwynn.zig",
 };
 
 // Although this function looks imperative, note that its job is to

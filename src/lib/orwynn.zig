@@ -98,7 +98,7 @@ pub fn Subscribe(code: MessageCode) !void {
     _ = code;
 }
 
-test "Init" {
+test "init" {
     try Init();
     try std.testing.expect(state.MessageQueue.front == undefined);
     try std.testing.expect(state.MessageQueue.back == undefined);
@@ -106,7 +106,7 @@ test "Init" {
     try std.testing.expect(state.MessageQueue.maxSize == MessageQueueMaxSize);
 }
 
-test "Enqueue message" {
+test "enqueue message" {
     try Init();
     state.MessageQueue.Enqueue(&Message{
         .Code = 0,
