@@ -1,11 +1,11 @@
 const std = @import("std");
-const utils = @import("./utils.zig");
-const db = @import("./db.zig");
-const core = @import("./core.zig");
-const simulation = @import("./simulation.zig");
+const Utils = @import("./Lib/Utils.zig");
+const Database = @import("./Database.zig");
+const Core = @import("./Core.zig");
+const Simulation = @import("./Simulation.zig");
 
 const commands = std.StaticStringMap(
-    *const fn (CommandContext) ?core.Error
+    *const fn (CommandContext) ?Core.Error
 ).initComptime(.{
     .{ "c", commit },
     .{ "r", rollback },
@@ -14,42 +14,42 @@ const commands = std.StaticStringMap(
     .{ "simulation.CreateWorld", simulationCreateWorld },
 });
 const CommandContext = struct {
-    Raw: *const utils.String,
-    Target: *const utils.String,
-    Args: [32]*const utils.String,
-    Kwargs: [32]*const utils.KeyValue,
+    Raw: *const Utils.String,
+    Target: *const Utils.String,
+    Args: [32]*const Utils.String,
+    Kwargs: [32]*const Utils.KeyValue,
 };
 
-fn simulationCreateWorld(_: CommandContext) ?core.Error {
-    simulation.CreateWorld() catch return core.Error.Default;
+fn simulationCreateWorld(_: CommandContext) ?Core.Error {
+    Simulation.CreateWorld() catch return Core.Error.Default;
     return null;
 }
 
-fn commit(_: CommandContext) ?core.Error {
-    db.Commit() catch return core.Error.Default;
+fn commit(_: CommandContext) ?Core.Error {
+    Database.Commit() catch return Core.Error.Default;
     return null;
 }
 
-fn rollback(_: CommandContext) ?core.Error {
-    db.Rollback() catch return core.Error.Default;
+fn rollback(_: CommandContext) ?Core.Error {
+    Database.Rollback() catch return Core.Error.Default;
     return null;
 }
 
-fn exit(_: CommandContext) ?core.Error {
+fn exit(_: CommandContext) ?Core.Error {
     std.process.exit(0);
     return null;
 }
 
-pub fn Execute(command: utils.String) !void {
+pub fn Execute(command: Utils.String) !void {
     const context = try CreateCommandContext(command);
-    const function = commands.get(context.Target.*) orelse return core.Error.UnrecognizedCommand;
+    const function = commands.get(context.Target.*) orelse return Core.Error.UnrecognizedCommand;
     const e = function(context);
     if (e != null) {
         return e;
     }
 }
 
-pub fn CreateCommandContext(command: utils.String) !CommandContext {
+pub fn CreateCommandContext(command: Utils.String) !CommandContext {
     var context = CommandContext{
         .Raw = &command,
         .Target = undefined,
@@ -63,15 +63,15 @@ pub fn CreateCommandContext(command: utils.String) !CommandContext {
 
     var firstPart = true;
     while (splitIterator.next()) |part| {
-        if (utils.Contains(u8, part, '=')) {
+        if (Utils.Contains(u8, part, '=')) {
             if (firstPart) {
                 // first part cannot be kwarg
-                return core.Error.CommandParsing;
+                return Core.Error.CommandParsing;
             }
             var kwargSplitIterator = std.mem.splitScalar(u8, part, '=');
-            const key = kwargSplitIterator.next() orelse return utils.Error.Default;
-            const value = kwargSplitIterator.next() orelse return utils.Error.Default;
-            context.Kwargs[kwargsIndex] = &utils.KeyValue{.K=key, .V=value};
+            const key = kwargSplitIterator.next() orelse return Utils.Error.Default;
+            const value = kwargSplitIterator.next() orelse return Utils.Error.Default;
+            context.Kwargs[kwargsIndex] = &Utils.KeyValue{.K=key, .V=value};
             kwargsIndex += 1;
             continue;
         }

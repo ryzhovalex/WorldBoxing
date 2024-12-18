@@ -1,4 +1,4 @@
-const db = @import("./db.zig");
+const db = @import("./Database.zig");
 const utils = @import("./utils.zig");
 pub const Day = u32;
 const currentDay: ?Day = null;

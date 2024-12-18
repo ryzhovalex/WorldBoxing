@@ -1,11 +1,11 @@
 const std = @import("std");
-const Commands = @import("./commands.zig");
-const Utils = @import("./utils.zig");
-const Db = @import("./db.zig");
-const Core = @import("./core.zig");
+const Commands = @import("./Commands.zig");
+const Utils = @import("./Lib/Utils.zig");
+const Database = @import("./Database.zig");
+const Core = @import("./Core.zig");
 
 pub fn main() !void {
-    try Db.Init();
+    try Database.Init();
     try cli();
 }
 

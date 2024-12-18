@@ -1,6 +1,6 @@
 const Orwynn = @import("./Lib/Orwynn.zig");
-const core = @import("./core.zig");
-const Utils = @import("./utils.zig");
+const Core = @import("./Core.zig");
+const Utils = @import("./Lib/Utils.zig");
 
 pub const Codes = enum(Orwynn.MessageCode) {
     PersonCreated = -2,
@@ -18,10 +18,10 @@ pub const Error = error{
 
 pub fn TranslateError(e: anyerror) Utils.String {
     switch (e) {
-        core.Error.UnrecognizedCommand => {
+        Core.Error.UnrecognizedCommand => {
             return "Unrecognized command";
         },
-        core.Error.CommandParsing => {
+        Core.Error.CommandParsing => {
             return "Command parsing";
         },
         else => {

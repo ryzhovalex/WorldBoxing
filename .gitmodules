@@ -1,0 +1,3 @@
+[submodule "Source/Lib/Fridge"]
+	path = Source/Lib/Fridge
+	url = git@github.com:cztomsik/fridge.git
