@@ -2,9 +2,9 @@
     .name = "WorldBoxing",
     .version = "0.0.0",
     .dependencies = .{
-        .sqlite = .{
-            .url = "git+https://github.com/vrischmann/zig-sqlite#97811f252fb4b019bd87e1cc814b7a9c167a416e",
-            .hash = "1220b80c704d654363434ba903fb86c5ec070763cacf78b6a5f25cf182f1f72cf340",
+        .fridge = .{
+            .url = "https://github.com/cztomsik/fridge/archive/refs/heads/main.tar.gz",
+            .hash = "12206f5c097ed931e346e6858da565973170b81f803d2286f17b261236e337dbaedd",
         },
     },
     .paths = .{
