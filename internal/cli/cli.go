@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"worldboxing/internal/code"
 	"worldboxing/lib/utils"
@@ -42,7 +43,7 @@ type CommandFunction func(*Context) *utils.Error
 var commands = map[string]CommandFunction{}
 
 func RegisterCommand(command string, function CommandFunction) *utils.Error {
-	_, ok := commands[command]
+	_, ok := commands[strings.ToLower(command)]
 	if ok {
 		return utils.NewError(code.CliCommandAlreadyRegistered)
 	}
@@ -51,7 +52,7 @@ func RegisterCommand(command string, function CommandFunction) *utils.Error {
 }
 
 func executeCall(call *Call) *utils.Error {
-	function, ok := commands[call.Command]
+	function, ok := commands[strings.ToLower(call.Command)]
 	if !ok {
 		return utils.NewError(code.CliNoSuchCommand)
 	}
@@ -68,6 +69,9 @@ type Call struct {
 	Kwargs  map[string]string
 }
 
+var CommandRegex = regexp.MustCompile(`^([A-z0-9]+\.)?[A-z0-9]+$`)
+var KwargKeyRegex = regexp.MustCompile(`^[A-z0-9]+$`)
+
 func parseInput(input string) (*Call, *utils.Error) {
 	call := Call{
 		input,
@@ -82,7 +86,11 @@ func parseInput(input string) (*Call, *utils.Error) {
 	}
 	for i, field := range fields {
 		if i == 0 {
-			call.Command = field
+			command := field
+			if !CommandRegex.MatchString(command) {
+				return nil, utils.NewError(code.CliCallParsing)
+			}
+			call.Command = command
 			continue
 		}
 		if strings.Contains(field, "=") {
@@ -90,7 +98,11 @@ func parseInput(input string) (*Call, *utils.Error) {
 			if len(parts) != 2 {
 				return nil, utils.NewError(code.CliCallParsing)
 			}
-			call.Kwargs[parts[0]] = parts[1]
+			kwargKey := parts[0]
+			if !CommandRegex.MatchString(kwargKey) {
+				return nil, utils.NewError(code.CliCallParsing)
+			}
+			call.Kwargs[kwargKey] = parts[1]
 			continue
 		}
 		call.Args = append(call.Args, field)

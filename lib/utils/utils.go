@@ -138,10 +138,14 @@ func Translate(key TranslationKey, args ...any) string {
 	return text
 }
 
+func Sleep(duration Time) {
+	time.Sleep(time.Duration(duration * 1000))
+}
+
 // Logging implementation.
-func Log(obj ...any) {
+func Log(message string) {
 	// TODO: write to sink, which may be stderr
-	fmt.Println(obj...)
+	fmt.Println(message)
 }
 
 // Order is not important.
