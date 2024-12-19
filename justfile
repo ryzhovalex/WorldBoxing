@@ -1,5 +1,17 @@
-run:
-    @ zig build run
+set shell := ["nu", "-c"]
+set dotenv-load
+dbmate := if os_family() == "windows" { "dbmate.cmd" } else { "dbmate" }
 
-test:
-    @ zig build test
+run:
+    @ go run .
+
+lint:
+    @ go fmt
+
+test t="":
+    @ if "{{t}}" == "" { go test } else { go test -run {{t}} }
+
+check: lint test
+
+migration *t:
+    @ {{dbmate}} -s "Database/SqliteSchema.sql" -d "Database/Migrations" {{t}}
