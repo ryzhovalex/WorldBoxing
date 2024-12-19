@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"worldboxing/internal/core"
+	"worldboxing/internal/code"
 	"worldboxing/lib/utils"
 )
 
@@ -24,6 +24,18 @@ func Start() {
 		}
 		processCall(call)
 	}
+}
+
+type CommandFunction = func(*Call) *utils.Error
+
+var commands = map[string]CommandFunction{}
+
+func RegisterCommand(command string, function CommandFunction) *utils.Error {
+	_, ok := commands[command]
+	if ok {
+		return utils.NewError(code.CliCommandAlreadyRegistered)
+	}
+	return nil
 }
 
 func processCall(call *Call) {
@@ -47,7 +59,7 @@ func parseInput(input string) (*Call, *utils.Error) {
 
 	fields := strings.Fields(input)
 	if len(fields) == 0 {
-		return nil, utils.NewError(core.CodeCliCallParseError)
+		return nil, utils.NewError(code.CliCallParseError)
 	}
 	for i, field := range fields {
 		if i == 0 {
@@ -57,7 +69,7 @@ func parseInput(input string) (*Call, *utils.Error) {
 		if strings.Contains(field, "=") {
 			parts := strings.Split(field, "=")
 			if len(parts) != 2 {
-				return nil, utils.NewError(core.CodeCliCallParseError)
+				return nil, utils.NewError(code.CliCallParseError)
 			}
 			call.Kwargs[parts[0]] = parts[1]
 			continue
