@@ -25,14 +25,10 @@ type Time = int64
 type Date = time.Time
 type Dict = map[string]any
 
-func Unwrap(err error) {
-	if err != nil {
-		panic(err)
+func Unwrap(e *Error) {
+	if e != nil {
+		panic(e.Error())
 	}
-}
-
-func Print(obj ...any) {
-	fmt.Println(obj...)
 }
 
 // Reference: https://stackoverflow.com/a/13295158/14748231
@@ -89,12 +85,12 @@ const CodeError Code = 1
 // which will always be converted to string.
 //
 // For list of locales refer to https://docs.godotengine.org/en/4.3/tutorials/i18n/locales.html
-func LoadTranslationCsv(path string, locale Locale, delimiter rune) error {
+func LoadTranslationCsv(path string, locale Locale, delimiter rune) *Error {
 	locale = strings.ToLower(locale)
 
 	file, e := os.Open(path)
 	if e != nil {
-		return e
+		return DefaultError()
 	}
 	defer file.Close()
 
@@ -102,7 +98,7 @@ func LoadTranslationCsv(path string, locale Locale, delimiter rune) error {
 	reader.Comma = delimiter
 	records, e := reader.ReadAll()
 	if e != nil {
-		return e
+		return DefaultError()
 	}
 
 	localeMap, ok := translationMap[locale]

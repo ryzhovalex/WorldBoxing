@@ -61,9 +61,10 @@ func (transport *Transport) GetConnection(
 }
 func (transport *Transport) Accept() (orwynn.Connection, *utils.Error) {
 	if transport.connection == nil {
-		transport.connection = &Connection{
-			id: 0,
-		}
+		connection := new(Connection)
+		connection.id = 0
+		connection.transport = transport
+		transport.connection = connection
 	}
 	return transport.connection, nil
 }
