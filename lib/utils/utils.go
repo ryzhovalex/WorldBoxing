@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/csv"
 	"fmt"
+	"math"
 	"os"
 	"strings"
 	"time"
@@ -61,6 +62,26 @@ func (e *Error) Error() string {
 
 func (e *Error) Code() Code {
 	return e.code
+}
+
+func (e *Error) Is(anycode ...Code) bool {
+	for _, code := range anycode {
+		if e.code == code {
+			return true
+		}
+	}
+	return false
+}
+
+// Convert from one error to another using conversion map.
+// If code is not found in the conversion map, default error is created and
+// returned.
+func (e *Error) Convert(conversion map[Code]Code) *Error {
+	target, ok := conversion[e.code]
+	if !ok {
+		return DefaultError()
+	}
+	return NewError(target)
 }
 
 func NewError(code Code) *Error {
@@ -159,4 +180,8 @@ func Log(message string) {
 func RemoveFromUnorderedSlice[T any](s []T, i int) []T {
 	s[i] = s[len(s)-1]
 	return s[:len(s)-1]
+}
+
+func PowInt(x, y int) int {
+	return int(math.Pow(float64(x), float64(y)))
 }

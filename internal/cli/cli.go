@@ -46,6 +46,7 @@ type Context struct {
 // Single-connection CLI transport. Always has a single active connection.
 type Transport struct {
 	connection orwynn.Connection
+	closed     chan bool
 }
 
 func (transport *Transport) GetMaxConnectionSize() int {
@@ -61,14 +62,27 @@ func (transport *Transport) GetConnection(
 }
 func (transport *Transport) Accept() (orwynn.Connection, *utils.Error) {
 	if transport.connection == nil {
+		transport.closed = make(chan bool, 1)
 		connection := new(Connection)
 		connection.id = 0
 		connection.transport = transport
 		transport.connection = connection
+		return transport.connection, nil
+	}
+	closed := <-transport.closed
+	if closed {
+		return nil, utils.NewError(orwynn.CodeTransportClosed)
 	}
 	return transport.connection, nil
 }
-func (transport *Transport) Close() {}
+
+// Closing before accepting is no-op.
+func (transport *Transport) Close() {
+	if transport.connection == nil {
+		return
+	}
+	transport.closed <- true
+}
 
 type Connection struct {
 	id        utils.Id

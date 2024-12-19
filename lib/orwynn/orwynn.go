@@ -13,6 +13,8 @@ import (
 
 const CodeCannotReferenceInnerTransport = 2
 const CodeIncorrectMessageStructure = 3
+const CodeTransportClosed = 4
+const CodeConnectionClosed = 5
 
 type Code = utils.Code
 type MessageBody = []byte
