@@ -25,6 +25,12 @@ type Time = int64
 type Date = time.Time
 type Dict = map[string]any
 
+// NOTE:
+// If we use `Unwrap(e error)` signature, somehow golang behaves this way:
+// if you pass nil pointer to the function, inside the function it will become
+// non-nil. We don't know why this happens yet. A solution to use pointer
+// to actual struct, this will limit us from passing generic errors, but will
+// resolve the problem for the time being.
 func Unwrap(e *Error) {
 	if e != nil {
 		panic(e.Error())
