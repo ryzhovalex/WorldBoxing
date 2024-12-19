@@ -1,5 +1,7 @@
 package main
 
+import "worldboxing/internal/cli"
+
 func main() {
-	print("hello world")
+	cli.Start()
 }
