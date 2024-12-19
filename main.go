@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"worldboxing/internal/cli"
+	"worldboxing/lib/orwynn"
 	"worldboxing/lib/utils"
 )
 
@@ -13,6 +14,8 @@ func exit(ctx *cli.Context) *utils.Error {
 
 func main() {
 	e := utils.LoadTranslationCsv("Static/Translations/en.csv", "en", ';')
+	utils.Unwrap(e)
+	e = orwynn.Init()
 	utils.Unwrap(e)
 
 	cli.RegisterCommand("q", exit)

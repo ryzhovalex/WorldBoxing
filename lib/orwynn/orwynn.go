@@ -20,6 +20,16 @@ type Message struct {
 	Code Code
 	Body MessageBody
 }
+
+func (message *Message) Serialize() []byte {
+	codeBytes := make([]byte, 2)
+	binary.LittleEndian.PutUint16(codeBytes, uint16(message.Code))
+	result := make([]byte, 2+len(message.Body))
+	result = append(result, codeBytes...)
+	result = append(result, message.Body...)
+	return result
+}
+
 type MessageContext struct {
 	Message *Message
 	// AuthorConnection of message's author. Set to nil if author is the host.
@@ -155,6 +165,9 @@ func sendMessageContextToInner(ctx *MessageContext) {
 func sendMessageContextToTargetConnections(ctx *MessageContext) {
 	if len(ctx.TargetConnections) == 0 {
 		return
+	}
+	for _, targetConnection := range ctx.TargetConnections {
+		go targetConnection.Send(ctx.Message.Serialize())
 	}
 }
 
