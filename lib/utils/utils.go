@@ -64,7 +64,7 @@ func (e *Error) Code() Code {
 	return e.code
 }
 
-func (e *Error) Is(anycode ...Code) bool {
+func (e *Error) IsCode(anycode ...Code) bool {
 	for _, code := range anycode {
 		if e.code == code {
 			return true
