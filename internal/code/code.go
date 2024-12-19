@@ -8,5 +8,6 @@ const Ok Code = utils.CodeOk
 const Error Code = utils.CodeError
 
 // CLI
-const CliCallParseError Code = 2
+const CliCallParsing Code = 2
 const CliCommandAlreadyRegistered Code = 3
+const CliNoSuchCommand Code = 4

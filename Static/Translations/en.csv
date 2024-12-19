@@ -2,3 +2,5 @@ key;text
 CODE_0;Ok
 CODE_1;Error
 CODE_2;Cannot parse CLI command
+CODE_3;Command already registered
+CODE_4;No such command

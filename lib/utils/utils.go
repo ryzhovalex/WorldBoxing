@@ -6,9 +6,16 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
-type Id = int64
+type Id = uint64
+type Uuid = string
+
+func MakeUuid() Uuid {
+	return uuid.New().String()
+}
 
 // Basic time defined in milliseconds.
 type Time = int64
@@ -135,4 +142,11 @@ func Translate(key TranslationKey, args ...any) string {
 func Log(obj ...any) {
 	// TODO: write to sink, which may be stderr
 	fmt.Println(obj...)
+}
+
+// Order is not important.
+// https://stackoverflow.com/a/37335777/14748231
+func RemoveFromUnorderedSlice[T any](s []T, i int) []T {
+	s[i] = s[len(s)-1]
+	return s[:len(s)-1]
 }

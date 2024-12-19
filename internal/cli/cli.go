@@ -22,11 +22,20 @@ func Start() {
 			throwError(e)
 			continue
 		}
-		processCall(call)
+		e = executeCall(call)
+		if e != nil {
+			throwError(e)
+			continue
+		}
 	}
 }
 
-type CommandFunction = func(*Call) *utils.Error
+type Context struct {
+	Call *Call
+	// database ...
+}
+
+type CommandFunction func(*Context) *utils.Error
 
 var commands = map[string]CommandFunction{}
 
@@ -35,11 +44,19 @@ func RegisterCommand(command string, function CommandFunction) *utils.Error {
 	if ok {
 		return utils.NewError(code.CliCommandAlreadyRegistered)
 	}
+	commands[command] = function
 	return nil
 }
 
-func processCall(call *Call) {
-	write(fmt.Sprintf("Test execute %s %v %v\n", call.Command, call.Args, call.Kwargs))
+func executeCall(call *Call) *utils.Error {
+	function, ok := commands[call.Command]
+	if !ok {
+		return utils.NewError(code.CliNoSuchCommand)
+	}
+	var ctx = Context{
+		call,
+	}
+	return function(&ctx)
 }
 
 type Call struct {
@@ -59,7 +76,7 @@ func parseInput(input string) (*Call, *utils.Error) {
 
 	fields := strings.Fields(input)
 	if len(fields) == 0 {
-		return nil, utils.NewError(code.CliCallParseError)
+		return nil, utils.NewError(code.CliCallParsing)
 	}
 	for i, field := range fields {
 		if i == 0 {
@@ -69,7 +86,7 @@ func parseInput(input string) (*Call, *utils.Error) {
 		if strings.Contains(field, "=") {
 			parts := strings.Split(field, "=")
 			if len(parts) != 2 {
-				return nil, utils.NewError(code.CliCallParseError)
+				return nil, utils.NewError(code.CliCallParsing)
 			}
 			call.Kwargs[parts[0]] = parts[1]
 			continue
