@@ -17,26 +17,26 @@ func NewMessageQueue(maxSize int) *MessageQueue {
 	}
 }
 
-func (self *MessageQueue) Enqueue(item *MessageContext) *utils.Error {
-	if self.IsFull() {
+func (queue *MessageQueue) Enqueue(item *MessageContext) *utils.Error {
+	if queue.IsFull() {
 		return utils.NewError(CodeMessageQueueFull)
 	}
-	self.data = append(self.data, item)
+	queue.data = append(queue.data, item)
 	return nil
 }
 
-func (self *MessageQueue) Dequeue() (*MessageContext, *utils.Error) {
+func (queue *MessageQueue) Dequeue() (*MessageContext, *utils.Error) {
 	return nil, nil
 }
 
-func (self *MessageQueue) Size() int {
-	return len(self.data)
+func (queue *MessageQueue) Size() int {
+	return len(queue.data)
 }
 
-func (self *MessageQueue) IsFull() bool {
-	return self.Size() == self.maxSize
+func (queue *MessageQueue) IsFull() bool {
+	return queue.Size() == queue.maxSize
 }
 
-func (self *MessageQueue) IsEmpty() bool {
-	return self.Size() == 0
+func (queue *MessageQueue) IsEmpty() bool {
+	return queue.Size() == 0
 }

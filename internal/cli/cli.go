@@ -7,6 +7,8 @@ import (
 	"strings"
 	"worldboxing/internal/code"
 	"worldboxing/lib/utils"
+
+	"github.com/fatih/color"
 )
 
 func Start() {
@@ -96,13 +98,23 @@ func parseInput(input string) (*Call, *utils.Error) {
 	return &call, nil
 }
 
+type Writer struct{}
+
+var writer = &Writer{}
+
+func (w *Writer) Write(data []byte) (int, error) {
+	print(string(data))
+	return len(data), nil
+}
+
 func throwError(e *utils.Error) {
-	message := e.Error()
-	write(message + "\n")
+	write("[")
+	color.New(color.FgRed).Fprint(writer, fmt.Sprintf("Error %d", e.Code()))
+	write(fmt.Sprintf("] %s\n", utils.TranslateCode(e.Code())))
 }
 
 func write(data string) {
-	print(data)
+	writer.Write([]byte(data))
 }
 
 func read() string {
