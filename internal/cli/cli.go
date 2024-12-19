@@ -27,7 +27,7 @@ func Start() {
 }
 
 func processCall(call *Call) {
-	write(fmt.Sprintf("Test execute %s", call.Command))
+	write(fmt.Sprintf("Test execute %s %v %v\n", call.Command, call.Args, call.Kwargs))
 }
 
 type Call struct {
@@ -69,7 +69,7 @@ func parseInput(input string) (*Call, *utils.Error) {
 
 func throwError(e *utils.Error) {
 	message := e.Error()
-	write(message)
+	write(message + "\n")
 }
 
 func write(data string) {

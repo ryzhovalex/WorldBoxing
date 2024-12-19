@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -79,7 +78,9 @@ const CodeError Code = 1
 // which will always be converted to string.
 //
 // For list of locales refer to https://docs.godotengine.org/en/4.3/tutorials/i18n/locales.html
-func RegisterTranslationCsv(path string, locale Locale, delimiter rune) error {
+func LoadTranslationCsv(path string, locale Locale, delimiter rune) error {
+	locale = strings.ToLower(locale)
+
 	file, e := os.Open(path)
 	if e != nil {
 		return e
@@ -106,7 +107,7 @@ func RegisterTranslationCsv(path string, locale Locale, delimiter rune) error {
 		if i == 0 {
 			continue
 		}
-		localeMap[record[0]] = record[1]
+		localeMap[strings.TrimSpace(record[0])] = strings.TrimSpace(record[1])
 	}
 
 	return nil
@@ -114,12 +115,11 @@ func RegisterTranslationCsv(path string, locale Locale, delimiter rune) error {
 
 // Codes are translated using keys `CODE_%`, where `%` is the number.
 func TranslateCode(code Code) string {
-	return Translate(fmt.Sprintf(
-		"CODE_%", strconv.Itoa(int(code)),
-	))
+	return Translate(fmt.Sprintf("CODE_%d", code))
 }
 
 func Translate(key TranslationKey, args ...any) string {
+	key = strings.ToUpper(key)
 	localeMap, ok := translationMap[translationLocale]
 	if !ok {
 		return "???"
