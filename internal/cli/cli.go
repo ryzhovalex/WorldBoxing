@@ -5,31 +5,84 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"worldboxing/internal/core"
 	"worldboxing/lib/utils"
 )
 
 func Start() {
+	write("Welcome to World Boxing!\n")
+
 	for {
-		var input string
-		print("> ")
-		_, e := fmt.Scanln(&input)
-		utils.Unwrap(e)
-		if len(input) > 0 {
-			print(input, "\n")
+		input := read()
+		if len(input) == 0 {
+			continue
 		}
+		call, e := parseInput(input)
+		if e != nil {
+			throwError(e)
+			continue
+		}
+		processCall(call)
 	}
 }
 
-func readInp() ([]string, errs.Err) {
-	inp := bufio.NewScanner(os.Stdin)
-	fmt.Print("> ")
-	ok := inp.Scan()
-	if !ok {
-		fmt.Print("\n")
-		return nil, quit(nil)
+func processCall(call *Call) {
+	write(fmt.Sprintf("Test execute %s", call.Command))
+}
+
+type Call struct {
+	Raw     string
+	Command string
+	Args    []string
+	Kwargs  map[string]string
+}
+
+func parseInput(input string) (*Call, *utils.Error) {
+	call := Call{
+		input,
+		"",
+		[]string{},
+		map[string]string{},
 	}
 
-	text := inp.Text()
-	lastInp = text
-	return strings.Fields(text), nil
+	fields := strings.Fields(input)
+	if len(fields) == 0 {
+		return nil, utils.NewError(core.CodeCliCallParseError)
+	}
+	for i, field := range fields {
+		if i == 0 {
+			call.Command = field
+			continue
+		}
+		if strings.Contains(field, "=") {
+			parts := strings.Split(field, "=")
+			if len(parts) != 2 {
+				return nil, utils.NewError(core.CodeCliCallParseError)
+			}
+			call.Kwargs[parts[0]] = parts[1]
+			continue
+		}
+		call.Args = append(call.Args, field)
+	}
+	return &call, nil
+}
+
+func throwError(e *utils.Error) {
+	message := e.Error()
+	write(message)
+}
+
+func write(data string) {
+	print(data)
+}
+
+func read() string {
+	input := bufio.NewScanner(os.Stdin)
+	write("> ")
+	ok := input.Scan()
+	if !ok {
+		fmt.Print("\n")
+		os.Exit(0)
+	}
+	return input.Text()
 }

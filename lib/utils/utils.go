@@ -51,6 +51,10 @@ func (e *Error) Error() string {
 	return fmt.Sprintf("[Error %d] %s", e.code, TranslateCode(e.code))
 }
 
+func (e *Error) Code() Code {
+	return e.code
+}
+
 func NewError(code Code) *Error {
 	return &Error{code}
 }
