@@ -7,10 +7,15 @@ import (
 	"regexp"
 	"strings"
 	"worldboxing/internal/code"
+	"worldboxing/lib/orwynn"
 	"worldboxing/lib/utils"
 
 	"github.com/fatih/color"
 )
+
+func Init() (orwynn.Transport, *utils.Error) {
+	return &Transport{}, nil
+}
 
 func Start() {
 	write("Welcome to World Boxing!\n")
@@ -36,6 +41,56 @@ func Start() {
 type Context struct {
 	Call *Call
 	// database ...
+}
+
+// Single-connection CLI transport. Always has a single active connection.
+type Transport struct {
+	connection orwynn.Connection
+}
+
+func (transport *Transport) GetMaxConnectionSize() int {
+	return 1
+}
+func (transport *Transport) GetConnectionSize() int {
+	return 1
+}
+func (transport *Transport) GetConnection(
+	id utils.Id,
+) (orwynn.Connection, *utils.Error) {
+	return transport.connection, nil
+}
+func (transport *Transport) Accept() (orwynn.Connection, *utils.Error) {
+	if transport.connection == nil {
+		transport.connection = &Connection{
+			id: 0,
+		}
+	}
+	return transport.connection, nil
+}
+func (transport *Transport) Close() {}
+
+type Connection struct {
+	id        utils.Id
+	transport orwynn.Transport
+}
+
+func (connection *Connection) Id() utils.Id {
+	return connection.id
+}
+func (connection *Connection) GetTransport() orwynn.Transport {
+	return connection.transport
+}
+func (connection *Connection) Send(data []byte) *utils.Error {
+	_, e := writer.Write(data)
+	if e != nil {
+		return utils.DefaultError()
+	}
+	return nil
+}
+func (connection *Connection) Recv() ([]byte, *utils.Error) {
+	return []byte(read()), nil
+}
+func (connection *Connection) Close() {
 }
 
 type CommandFunction func(*Context) *utils.Error

@@ -65,6 +65,10 @@ func NewError(code Code) *Error {
 	return &Error{code}
 }
 
+func DefaultError() *Error {
+	return NewError(0)
+}
+
 type Locale = string
 type TranslationKey = string
 

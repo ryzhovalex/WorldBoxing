@@ -5,7 +5,7 @@ import "worldboxing/lib/utils"
 type Transport interface {
 	GetMaxConnectionSize() int
 	GetConnectionSize() int
-	GetConnection(id utils.Id) Connection
+	GetConnection(id utils.Id) (Connection, *utils.Error)
 	Accept() (Connection, *utils.Error)
 	Close()
 }
