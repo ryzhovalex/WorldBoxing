@@ -90,7 +90,7 @@ func (e *Error) IsCode(anycode ...Code) bool {
 func (e *Error) Convert(conversion map[Code]Code) *Error {
 	target, ok := conversion[e.code]
 	if !ok {
-		return DefaultError()
+		return DefaultError("")
 	}
 	return NewError(target, "")
 }
@@ -99,8 +99,8 @@ func NewError(code Code, message string) *Error {
 	return &Error{code, message}
 }
 
-func DefaultError() *Error {
-	return NewError(1, "")
+func DefaultError(message string) *Error {
+	return NewError(1, message)
 }
 
 type Locale = string
@@ -128,7 +128,7 @@ func LoadTranslationCsv(path string, locale Locale, delimiter rune) *Error {
 
 	file, e := os.Open(path)
 	if e != nil {
-		return DefaultError()
+		return DefaultError("")
 	}
 	defer file.Close()
 
@@ -136,7 +136,7 @@ func LoadTranslationCsv(path string, locale Locale, delimiter rune) *Error {
 	reader.Comma = delimiter
 	records, e := reader.ReadAll()
 	if e != nil {
-		return DefaultError()
+		return DefaultError("")
 	}
 
 	localeMap, ok := translationMap[locale]

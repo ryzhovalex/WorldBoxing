@@ -7,7 +7,7 @@ type Code = utils.Code
 const (
 	Ok                               Code = 0
 	Error                            Code = 1
-	CliCallParsingError                   = 2
-	CliAlreadyRegisteredCommandError      = 3
-	CliMissingCommandError                = 4
+	CliCallParsingError              Code = 2
+	CliAlreadyRegisteredCommandError Code = 3
+	CliMissingCommandError           Code = 4
 )

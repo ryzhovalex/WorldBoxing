@@ -7,7 +7,7 @@ CREATE TABLE Sponsorship(
 
 CREATE TABLE Company(
     Id INTEGER PRIMARY KEY,
-    CompanyName TEXT UNIQUE NOT NULL,
+    Name TEXT UNIQUE NOT NULL,
     NetWorth FLOAT NOT NULL DEFAULT 0.0
 );
 
@@ -54,6 +54,7 @@ CREATE TABLE World(
     -- Viable to keep track on current level of synchronization between events
     -- and database state.
     LastProcessedStateEventId INTEGER REFERENCES StateEvent(Id)
+    SimulationStarted INTEGER NOT NULL DEFAULT 0 CHECK (Simulated IN (0, 1))
 );
 
 CREATE TABLE StateEvent(
@@ -67,14 +68,17 @@ CREATE TABLE StateEvent(
 
 CREATE TABLE City(
     Id INTEGER PRIMARY KEY,
-    CityName TEXT UNIQUE NOT NULL,
+    Name TEXT UNIQUE NOT NULL,
     CountryId INTEGER NOT NULL REFERENCES Country(Id),
     Population INTEGER
+    Capital INTEGER CHECK (Capital IN (0, 1))
+    Archetype TEXT
+    Influence FLOAT CHECK (Influence BETWEEN 0.0 AND 1.0)
 );
 
 CREATE TABLE Country(
     Id INTEGER PRIMARY KEY,
-    CountryName TEXT UNIQUE NOT NULL
+    Name TEXT UNIQUE NOT NULL
 );
 
 CREATE TABLE Fight(

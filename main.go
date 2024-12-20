@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"worldboxing/internal/cli"
+	"worldboxing/internal/sim"
 	"worldboxing/lib/database"
 	"worldboxing/lib/quco"
 	"worldboxing/lib/utils"
@@ -13,10 +14,14 @@ func qucoGet(ctx *cli.Context) *utils.Error {
 	return e
 }
 
+func simStart(ctx *cli.Context) *utils.Error {
+	return sim.Start()
+}
+
 func write(_ *cli.Context) *utils.Error {
 	be := database.T.Commit()
 	if be != nil {
-		return utils.DefaultError()
+		return utils.DefaultError("")
 	}
 	return nil
 }
@@ -24,7 +29,7 @@ func write(_ *cli.Context) *utils.Error {
 func rollback(_ *cli.Context) *utils.Error {
 	be := database.T.Rollback()
 	if be != nil {
-		return utils.DefaultError()
+		return utils.DefaultError("")
 	}
 	// restart transaction after rollback
 	database.BeginGlobalTransaction()
@@ -51,7 +56,7 @@ func main() {
 	cli.RegisterCommand("r", rollback)
 	cli.RegisterCommand("q", quit)
 
-	cli.RegisterCommand("sim.", quit)
+	cli.RegisterCommand("sim.start", simStart)
 
 	cli.Start()
 }
