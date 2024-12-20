@@ -17,27 +17,6 @@ func Init() (orwynn.Transport, *utils.Error) {
 	return &Transport{}, nil
 }
 
-func Start() {
-	write("Welcome to World Boxing!\n")
-
-	for {
-		input := read()
-		if len(input) == 0 {
-			continue
-		}
-		call, e := parseInput(input)
-		if e != nil {
-			throwError(e)
-			continue
-		}
-		e = executeCall(call)
-		if e != nil {
-			throwError(e)
-			continue
-		}
-	}
-}
-
 type Context struct {
 	Call *Call
 	// database ...
@@ -62,6 +41,7 @@ func (transport *Transport) GetConnection(
 }
 func (transport *Transport) Accept() (orwynn.Connection, *utils.Error) {
 	if transport.connection == nil {
+		write("Welcome to World Boxing!\n")
 		transport.closed = make(chan bool, 1)
 		connection := new(Connection)
 		connection.id = 0
@@ -103,6 +83,17 @@ func (connection *Connection) Send(data []byte) *utils.Error {
 	return nil
 }
 func (connection *Connection) Recv() ([]byte, *utils.Error) {
+	for {
+		input := read()
+		if len(input) == 0 {
+			continue
+		}
+		call, e := parseInput(input)
+		if e != nil {
+			throwError(e)
+			continue
+		}
+	}
 	return []byte(read()), nil
 }
 func (connection *Connection) Close() {

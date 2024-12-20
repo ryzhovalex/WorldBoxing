@@ -1,9 +1,3 @@
-// Making reactivity.
-//
-// Keypoints:
-// * we have a thread per connection
-// * we have a single thread for output queue (may be changed in a future)
-// * each subscriber is called in a separate thread
 package orwynn
 
 import (
@@ -37,11 +31,12 @@ type MessageContext struct {
 	// AuthorConnection of message's author. Set to nil if author is the host.
 	AuthorConnection Connection
 	// Connections to which the message should be sent to. Only considered for
-	// output messages.
+	// output messages. If not set, message processing is no-op.
 	TargetConnections []Connection
 }
 
 // Send a response message to the author connection of this message.
+// Helper method to grab context's author and use it as a target in Publish.
 func (ctx *MessageContext) Answer(code Code, body MessageBody) *utils.Error {
 	return Publish(
 		code,
@@ -143,13 +138,16 @@ func processOutputQueue() {
 			utils.Sleep(OutputQueueReadCooldown)
 			continue
 		}
-		ctx, e := state.OutputQueue.Dequeue()
+		contexts, e := state.OutputQueue.DequeueAll()
 		if e != nil {
 			utils.Log(e.Error())
 			continue
 		}
-		go sendMessageContextToInner(ctx)
-		go sendMessageContextToTargetConnections(ctx)
+		for _, ctx := range contexts {
+			// no need to create thread here: cheaper would be to iterate over
+			// target connections, since in usual case we send to 1 recipient
+			distributeMessageContextToTargetConnections(ctx)
+		}
 	}
 }
 
@@ -164,8 +162,15 @@ func sendMessageContextToInner(ctx *MessageContext) {
 	}
 }
 
-func sendMessageContextToTargetConnections(ctx *MessageContext) {
-	if len(ctx.TargetConnections) == 0 {
+func distributeMessageContextToTargetConnections(ctx *MessageContext) {
+	targetConnectionsLen := len(ctx.TargetConnections)
+	if targetConnectionsLen == 0 {
+		return
+	}
+	if targetConnectionsLen == 1 {
+		// in most cases we send to one recipient, so we save a little bit
+		// by not going into a loop, but index first connection directly
+		go ctx.TargetConnections[0].Send(ctx.Message.Serialize())
 		return
 	}
 	for _, targetConnection := range ctx.TargetConnections {
@@ -174,7 +179,7 @@ func sendMessageContextToTargetConnections(ctx *MessageContext) {
 }
 
 // Spec:
-// First two bytes -> code
+// First two bytes -> int16 code
 // Rest is to the body.
 func newMessage(raw []byte) (*Message, *utils.Error) {
 	if len(raw) < 2 {
