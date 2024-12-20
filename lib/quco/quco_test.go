@@ -1,6 +1,7 @@
 package quco
 
 import (
+	"strings"
 	"testing"
 	"worldboxing/lib/quco/tokens"
 	"worldboxing/lib/utils"
@@ -235,11 +236,12 @@ func TestInterpretationGetNameOk(t *testing.T) {
 	}
 	query, e := interpretation(lexicalTokens)
 	utils.Unwrap(e)
+	print("`", query, "`")
 	expectedQuery := `
 SELECT * FROM Person
 WHERE Name = 'GET'
 `
-	if query != expectedQuery {
+	if strings.TrimSpace(query) != strings.TrimSpace(expectedQuery) {
 		t.FailNow()
 	}
 }

@@ -163,7 +163,9 @@ func interpretation(lexicalTokens []*tokens.Token) (string, *utils.Error) {
 
 	switch action {
 	case ActionGet:
-		return get(collection, lexicalTokens[2:])
+		// Body tokens start after Action, Collection and EndInstruction
+		// tokens.
+		return get(collection, lexicalTokens[3:])
 	default:
 		return "", utils.NewError(CodeUnsupportedAction, "")
 	}
@@ -177,7 +179,10 @@ func get(
 	if e != nil {
 		return "", e
 	}
-	dbQuery := fmt.Sprintf(`SELECT * FROM %s WHERE %s`, collection, whereQuery)
+	dbQuery := fmt.Sprintf(`
+SELECT * FROM %s
+WHERE %s
+`, collection, whereQuery)
 	return dbQuery, nil
 }
 
@@ -192,7 +197,8 @@ func generateWhereQuery(bodyTokens []*tokens.Token) (string, *utils.Error) {
 	assignmentTokenAppeared := false
 
 	for _, t := range bodyTokens {
-		if t.Type == tokens.Name {
+		// Compose left-hand instruction key from dot pieces.
+		if t.Type == tokens.Name && !assignmentTokenAppeared {
 			if instructionKey != "" {
 				instructionKey += "." + t.Value
 			} else {
@@ -206,7 +212,8 @@ func generateWhereQuery(bodyTokens []*tokens.Token) (string, *utils.Error) {
 			if len(instructionKey) == 0 {
 				return "", utils.NewError(CodeTokenParsingError, "Cannot assign comparsion token without active instruction.")
 			}
-			if !dotTokenLast {
+			// Assignment token can go without preceding dot.
+			if !dotTokenLast && t.Type != tokens.Assignment {
 				return "", utils.NewError(CodeTokenParsingError, "Comparison token without dot operator.")
 			}
 			if assignmentTokenAppeared {
@@ -225,6 +232,23 @@ func generateWhereQuery(bodyTokens []*tokens.Token) (string, *utils.Error) {
 				return "", utils.NewError(CodeTokenParsingError, "Invalid instruction target.")
 			}
 			assignmentTokenAppeared = true
+			continue
+		}
+		if t.Type == tokens.EndInstruction {
+			if instructionKey == "" || instructionValue == "" || !assignmentTokenAppeared {
+				return "", utils.NewError(CodeTokenParsingError, "Invalid instruction.")
+			}
+
+			condition, e := parseInstructionToCondition(instructionKey, instructionComparisonType, instructionValue)
+			if e != nil {
+				return "", e
+			}
+			conditions = append(conditions, condition)
+
+			instructionKey = ""
+			instructionValue = ""
+			assignmentTokenAppeared = false
+			dotTokenLast = false
 			continue
 		}
 		if assignmentTokenAppeared {
@@ -251,22 +275,6 @@ func generateWhereQuery(bodyTokens []*tokens.Token) (string, *utils.Error) {
 			if prevInstructionValue == instructionValue {
 				return "", utils.NewError(CodeTokenParsingError, "Right-side token produced no adjustments to instruction value.")
 			}
-		}
-		if t.Type == tokens.EndInstruction {
-			if instructionKey == "" || instructionValue == "" || !assignmentTokenAppeared {
-				print(instructionValue, "\n")
-				return "", utils.NewError(CodeTokenParsingError, "Invalid instruction.")
-			}
-			instructionKey = ""
-			instructionValue = ""
-			assignmentTokenAppeared = false
-			dotTokenLast = false
-			condition, e := parseInstructionToCondition(instructionKey, instructionComparisonType, instructionValue)
-			if e != nil {
-				return "", e
-			}
-			conditions = append(conditions, condition)
-			continue
 		}
 
 		dotTokenLast = t.Type == tokens.Dot
