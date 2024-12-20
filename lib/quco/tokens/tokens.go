@@ -22,12 +22,10 @@ var TextToTokenType = map[string]Type{
 	")":      ContainerClose,
 	".":      Dot,
 	",":      Comma,
-	"\n":     Newline,
 }
 
 const (
-	Newline Type = iota
-	Name
+	Name Type = iota
 	Get
 	Create
 	Set

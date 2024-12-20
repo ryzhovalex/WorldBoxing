@@ -1,7 +1,6 @@
 package quco
 
 import (
-	"strings"
 	"worldboxing/lib/quco/tokens"
 	"worldboxing/lib/utils"
 )
@@ -51,20 +50,28 @@ func lexical(query string) []*tokens.Token {
 		instructionEnding := x == '\n' || x == '(' || x == ')' || x == '"' || x == '=' || x == '.' || x == ',' || x == ' ' || x == '\t'
 		if !quoteOpened && instructionEnding {
 			// Write non-empty buffer.
-			if len(strings.TrimSpace(buf)) > 0 {
+			if len(utils.RemoveSpaces(buf)) > 0 {
 				result = append(result, lexicalParseChunk(buf))
 			}
 			buf = ""
-			result = append(
-				result,
-				lexicalParseChunk(stringX),
-			)
+			// Whitespaces are ignored everywhere except inside
+			// strings.
+			if x != ' ' && x != '\t' && x != '\n' {
+				result = append(
+					result,
+					lexicalParseChunk(stringX),
+				)
+			}
 			if x == '"' {
 				quoteOpened = !quoteOpened
 			}
 			continue
 		}
 		buf += stringX
+	}
+	// Save rest of the buffer as token if it's not empty.
+	if len(utils.RemoveSpaces(buf)) > 0 {
+		result = append(result, lexicalParseChunk(buf))
 	}
 	return result
 }
