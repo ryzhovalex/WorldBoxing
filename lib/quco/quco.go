@@ -18,7 +18,8 @@ type Response struct {
 
 // For now only GET is supported.
 func Execute(query string) (*Response, *utils.Error) {
-	return nil, nil
+	t := lexical(query)
+	return interpretation(t)
 }
 
 func lexical(query string) []*tokens.Token {
@@ -95,6 +96,7 @@ func lexicalParseChunk(chunk string) *tokens.Token {
 	}
 }
 
-func interpretation(tokens []*tokens.Token) {
-
+func interpretation(lexicalTokens []*tokens.Token) (*Response, *utils.Error) {
+	response := Response{}
+	return &response, nil
 }
