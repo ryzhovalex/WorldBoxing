@@ -39,7 +39,7 @@ func Execute(query string) (*Response, *utils.Error) {
 	}
 
 	units := &[]Unit{}
-	be := database.Tx.Select(units, dbQuery, nil)
+	be := database.T.Select(units, dbQuery, nil)
 	if be != nil {
 		return nil, utils.NewError(CodeSqlQueryExecutionError, "")
 	}

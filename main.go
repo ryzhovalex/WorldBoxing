@@ -14,7 +14,7 @@ func qucoGet(ctx *cli.Context) *utils.Error {
 }
 
 func write(_ *cli.Context) *utils.Error {
-	be := database.Tx.Commit()
+	be := database.T.Commit()
 	if be != nil {
 		return utils.DefaultError()
 	}
@@ -22,7 +22,7 @@ func write(_ *cli.Context) *utils.Error {
 }
 
 func rollback(_ *cli.Context) *utils.Error {
-	be := database.Tx.Rollback()
+	be := database.T.Rollback()
 	if be != nil {
 		return utils.DefaultError()
 	}
@@ -46,9 +46,12 @@ func main() {
 	e = database.BeginGlobalTransaction()
 	utils.Unwrap(e)
 
-	cli.RegisterCommand("get", qucoGet)
-	cli.RegisterCommand("write", write)
-	cli.RegisterCommand("rollback", rollback)
-	cli.RegisterCommand("quit", quit)
+	cli.RegisterCommand("g", qucoGet)
+	cli.RegisterCommand("w", write)
+	cli.RegisterCommand("r", rollback)
+	cli.RegisterCommand("q", quit)
+
+	cli.RegisterCommand("sim.", quit)
+
 	cli.Start()
 }

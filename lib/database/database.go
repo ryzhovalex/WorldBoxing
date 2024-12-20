@@ -8,7 +8,7 @@ import (
 )
 
 var D *sqlx.DB
-var Tx *sqlx.Tx
+var T *sqlx.Tx
 
 func Init() *utils.Error {
 	var baseError error
@@ -21,7 +21,7 @@ func Init() *utils.Error {
 
 func BeginGlobalTransaction() *utils.Error {
 	var be error
-	Tx, be = D.Beginx()
+	T, be = D.Beginx()
 	if be != nil {
 		return utils.DefaultError()
 	}
