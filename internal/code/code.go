@@ -4,10 +4,13 @@ import "worldboxing/lib/utils"
 
 type Code = utils.Code
 
-const Ok Code = utils.CodeOk
-const Error Code = utils.CodeError
+const (
+	Hello      = -1
+	Ok    Code = 0
+	Error      = 1
 
-// CLI
-const CliCallParsing Code = 2
-const CliCommandAlreadyRegistered Code = 3
-const CliNoSuchCommand Code = 4
+	// CLI
+	CliCallParsing              = 2
+	CliCommandAlreadyRegistered = 3
+	CliNoSuchCommand            = 4
+)

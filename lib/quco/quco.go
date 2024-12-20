@@ -48,7 +48,7 @@ func lexical(query string) []*tokens.Token {
 		// If encounter instruction ending operators, we convert existing
 		// buffer to token, empty the buffer and move on. But not for string
 		// content.
-		instructionEnding := x == '\n' || x == '(' || x == ')' || x == '"' || x == '='
+		instructionEnding := x == '\n' || x == '(' || x == ')' || x == '"' || x == '=' || x == '.' || x == ',' || x == ' ' || x == '\t'
 		if !quoteOpened && instructionEnding {
 			// Write non-empty buffer.
 			if len(strings.TrimSpace(buf)) > 0 {
