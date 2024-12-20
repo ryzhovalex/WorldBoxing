@@ -91,7 +91,8 @@ CREATE TABLE Arena(
 CREATE TABLE City(
     Id INTEGER PRIMARY KEY,
     CityName TEXT UNIQUE NOT NULL,
-    CountryId INTEGER NOT NULL REFERENCES Country(Id)
+    CountryId INTEGER NOT NULL REFERENCES Country(Id),
+    Population INTEGER
 );
 
 CREATE TABLE Country(

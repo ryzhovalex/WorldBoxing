@@ -13,7 +13,8 @@ import (
 )
 
 type Context struct {
-	Call *Call
+	Call  *Call
+	Write func(string)
 	// database ...
 }
 
@@ -57,7 +58,8 @@ func executeCall(call *Call) *utils.Error {
 		return utils.NewError(code.CliNoSuchCommand)
 	}
 	var ctx = Context{
-		call,
+		Call:  call,
+		Write: write,
 	}
 	return function(&ctx)
 }

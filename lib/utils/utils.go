@@ -89,7 +89,7 @@ func NewError(code Code) *Error {
 }
 
 func DefaultError() *Error {
-	return NewError(0)
+	return NewError(1)
 }
 
 type Locale = string
