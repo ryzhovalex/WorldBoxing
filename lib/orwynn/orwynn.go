@@ -9,6 +9,7 @@ const CodeCannotReferenceInnerTransport = 2
 const CodeIncorrectMessageStructure = 3
 const CodeTransportClosed = 4
 const CodeConnectionClosed = 5
+const CodePublishWithoutTargetConnections = 6
 
 type Code = utils.Code
 type MessageBody = []byte
@@ -41,9 +42,7 @@ func (ctx *MessageContext) Answer(code Code, body MessageBody) *utils.Error {
 	return Publish(
 		code,
 		body,
-		&PublishOptions{
-			TargetConnections: []Connection{ctx.AuthorConnection},
-		},
+		[]Connection{ctx.AuthorConnection},
 	)
 }
 
@@ -57,19 +56,11 @@ type Subscription struct {
 const MessageQueueMaxSize = 65536
 
 type State struct {
-	// We have a single incoming and outcoming InputQueue for all transports.
-	InputQueue          *MessageQueue
-	OutputQueue         *MessageQueue
 	Transports          map[string]Transport
 	CodeToSubscriptions map[Code][]*Subscription
 	// TODO: Eliminate risk of available subscription id overflow while
 	//		 earlier slots became vacant (by unsubscribing).
 	NextSubscriptionId utils.Id
-}
-
-type PublishOptions struct {
-	// Connections to publish to. Inner transport is used in any case.
-	TargetConnections []Connection
 }
 
 type UnsubscribeFunction func()
@@ -82,13 +73,10 @@ func Init(transports map[string]Transport) *utils.Error {
 		return utils.NewError(CodeCannotReferenceInnerTransport)
 	}
 	state = &State{
-		InputQueue:          NewMessageQueue(MessageQueueMaxSize),
-		OutputQueue:         NewMessageQueue(MessageQueueMaxSize),
 		Transports:          transports,
 		CodeToSubscriptions: map[Code][]*Subscription{},
 		NextSubscriptionId:  0,
 	}
-	go processOutputQueue()
 	for _, transport := range transports {
 		go acceptTransportConnections(transport)
 	}
@@ -110,6 +98,8 @@ func acceptTransportConnections(transport Transport) {
 func processConnectionInput(connection Connection) {
 	defer connection.Close()
 	for {
+		// if any message processing error happens, the connection is
+		// immediately closed
 		raw, e := connection.Recv()
 		if e != nil {
 			utils.Log(e.Error())
@@ -124,30 +114,7 @@ func processConnectionInput(connection Connection) {
 			Message:          message,
 			AuthorConnection: connection,
 		}
-		state.InputQueue.Enqueue(&messageContext)
-	}
-}
-
-// How long to sleep if output queue is empty. So it will take this time for
-// the server for awake after an empty queue.
-const OutputQueueReadCooldown = 50
-
-func processOutputQueue() {
-	for {
-		if state.OutputQueue.IsEmpty() {
-			utils.Sleep(OutputQueueReadCooldown)
-			continue
-		}
-		contexts, e := state.OutputQueue.DequeueAll()
-		if e != nil {
-			utils.Log(e.Error())
-			continue
-		}
-		for _, ctx := range contexts {
-			// no need to create thread here: cheaper would be to iterate over
-			// target connections, since in usual case we send to 1 recipient
-			distributeMessageContextToTargetConnections(ctx)
-		}
+		go sendMessageContextToInner(&messageContext)
 	}
 }
 
@@ -201,7 +168,23 @@ func newMessage(raw []byte) (*Message, *utils.Error) {
 }
 
 // Publish a message body to the bus.
-func Publish(code Code, body MessageBody, options *PublishOptions) *utils.Error {
+func Publish(code Code, body MessageBody, targets []Connection) *utils.Error {
+	if len(targets) == 0 {
+		return utils.NewError(CodePublishWithoutTargetConnections)
+	}
+
+	message := Message{
+		Code: code,
+		Body: body,
+	}
+	ctx := MessageContext{
+		Message:           &message,
+		AuthorConnection:  nil,
+		TargetConnections: targets,
+	}
+	// no need to create thread here: cheaper would be to iterate over
+	// target connections, since in usual case we send to 1 recipient
+	distributeMessageContextToTargetConnections(&ctx)
 	return nil
 }
 
