@@ -216,3 +216,7 @@ func RemoveSpaces(s string) string {
 	re := regexp.MustCompile(`\s+`)
 	return re.ReplaceAllString(s, "")
 }
+
+func WrapString(s string, wrapper string) string {
+	return fmt.Sprintf("%s%s%s", wrapper, s, wrapper)
+}

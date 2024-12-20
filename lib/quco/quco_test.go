@@ -236,11 +236,85 @@ func TestInterpretationGetNameOk(t *testing.T) {
 	}
 	query, e := interpretation(lexicalTokens)
 	utils.Unwrap(e)
-	print("`", query, "`")
 	expectedQuery := `
 SELECT * FROM Person
 WHERE Name = 'GET'
 `
+	if strings.TrimSpace(query) != strings.TrimSpace(expectedQuery) {
+		t.FailNow()
+	}
+}
+
+func TestInterpretationGetNameAndAgeOk(t *testing.T) {
+	lexicalTokens := []*tokens.Token{
+		{
+			Type:  tokens.Get,
+			Value: "GET",
+		},
+		{
+			Type:  tokens.Name,
+			Value: "Person",
+		},
+		{
+			Type:  tokens.EndInstruction,
+			Value: "\n",
+		},
+		{
+			Type:  tokens.Name,
+			Value: "Name",
+		},
+		{
+			Type:  tokens.Assignment,
+			Value: "=",
+		},
+		{
+			Type:  tokens.Quote,
+			Value: "\"",
+		},
+		{
+			Type:  tokens.Name,
+			Value: "John",
+		},
+		{
+			Type:  tokens.Quote,
+			Value: "\"",
+		},
+		{
+			Type:  tokens.EndInstruction,
+			Value: "\n",
+		},
+		{
+			Type:  tokens.Name,
+			Value: "Age",
+		},
+		{
+			Type:  tokens.Dot,
+			Value: ".",
+		},
+		{
+			Type:  tokens.Ge,
+			Value: "GE",
+		},
+		{
+			Type:  tokens.Assignment,
+			Value: "=",
+		},
+		{
+			Type:  tokens.Integer,
+			Value: "18",
+		},
+		{
+			Type:  tokens.EndInstruction,
+			Value: "\n",
+		},
+	}
+	query, e := interpretation(lexicalTokens)
+	utils.Unwrap(e)
+	expectedQuery := `
+SELECT * FROM Person
+WHERE Name = 'John' AND Age >= 18
+`
+	print(utils.WrapString(query, "`"))
 	if strings.TrimSpace(query) != strings.TrimSpace(expectedQuery) {
 		t.FailNow()
 	}

@@ -206,8 +206,11 @@ func generateWhereQuery(bodyTokens []*tokens.Token) (string, *utils.Error) {
 			}
 		}
 		if tokens.IsComparisonToken(t) {
-			if instructionComparisonTypeSet {
+			if instructionComparisonTypeSet && t.Type != tokens.Assignment {
 				return "", utils.NewError(CodeTokenParsingError, "Duplicate comparison instruction.")
+			}
+			if instructionComparisonTypeSet && instructionComparisonType == t.Type && t.Type == tokens.Assignment {
+				return "", utils.NewError(CodeTokenParsingError, "Duplicate assignment instruction.")
 			}
 			if len(instructionKey) == 0 {
 				return "", utils.NewError(CodeTokenParsingError, "Cannot assign comparsion token without active instruction.")
@@ -219,8 +222,12 @@ func generateWhereQuery(bodyTokens []*tokens.Token) (string, *utils.Error) {
 			if assignmentTokenAppeared {
 				return "", utils.NewError(CodeTokenParsingError, "Invalid assignment token placement.")
 			}
-			instructionComparisonTypeSet = true
-			instructionComparisonType = t.Type
+			// Avoid resetting of true comparison type by the required
+			// assignment token.
+			if !instructionComparisonTypeSet {
+				instructionComparisonTypeSet = true
+				instructionComparisonType = t.Type
+			}
 		} else {
 			instructionComparisonTypeSet = false
 		}
@@ -248,6 +255,7 @@ func generateWhereQuery(bodyTokens []*tokens.Token) (string, *utils.Error) {
 			instructionKey = ""
 			instructionValue = ""
 			assignmentTokenAppeared = false
+			instructionComparisonTypeSet = false
 			dotTokenLast = false
 			continue
 		}
