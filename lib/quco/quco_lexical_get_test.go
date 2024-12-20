@@ -6,8 +6,8 @@ import (
 )
 
 func TestStringOk(t *testing.T) {
-	realTokens := lexical(`GET
-name="GET"`)
+	realTokens := lexical(`GET Person
+Name="GET"`)
 	compareTokens(
 		t,
 		[]*tokens.Token{
@@ -17,7 +17,11 @@ name="GET"`)
 			},
 			{
 				Type:  tokens.Name,
-				Value: "name",
+				Value: "Person",
+			},
+			{
+				Type:  tokens.Name,
+				Value: "Name",
 			},
 			{
 				Type:  tokens.Assignment,
@@ -41,8 +45,8 @@ name="GET"`)
 }
 
 func TestIntegerOk(t *testing.T) {
-	realTokens := lexical(`GET
-age=100`)
+	realTokens := lexical(`GET Person
+Age=100`)
 	compareTokens(
 		t,
 		[]*tokens.Token{
@@ -52,7 +56,11 @@ age=100`)
 			},
 			{
 				Type:  tokens.Name,
-				Value: "age",
+				Value: "Person",
+			},
+			{
+				Type:  tokens.Name,
+				Value: "Age",
 			},
 			{
 				Type:  tokens.Assignment,
@@ -61,6 +69,61 @@ age=100`)
 			{
 				Type:  tokens.Integer,
 				Value: "100",
+			},
+		},
+		realTokens,
+	)
+}
+
+func TestContainerOk(t *testing.T) {
+	realTokens := lexical(`GET Person
+Salary.IN=(100, 200)`)
+	compareTokens(
+		t,
+		[]*tokens.Token{
+			{
+				Type:  tokens.Get,
+				Value: "GET",
+			},
+			{
+				Type:  tokens.Name,
+				Value: "Person",
+			},
+			{
+				Type:  tokens.Name,
+				Value: "Salary",
+			},
+			{
+				Type:  tokens.Dot,
+				Value: ".",
+			},
+			{
+				Type:  tokens.In,
+				Value: "IN",
+			},
+			{
+				Type:  tokens.Assignment,
+				Value: "=",
+			},
+			{
+				Type:  tokens.ContainerOpen,
+				Value: "(",
+			},
+			{
+				Type:  tokens.Integer,
+				Value: "100",
+			},
+			{
+				Type:  tokens.Comma,
+				Value: ",",
+			},
+			{
+				Type:  tokens.Integer,
+				Value: "200",
+			},
+			{
+				Type:  tokens.ContainerClose,
+				Value: ")",
 			},
 		},
 		realTokens,
