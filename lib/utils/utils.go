@@ -55,11 +55,20 @@ func DateNow() Date {
 
 type Code = int16
 type Error struct {
-	code Code
+	code    Code
+	message string
 }
 
 func (e *Error) Error() string {
-	return fmt.Sprintf("[Error %d] %s", e.code, TranslateCode(e.code))
+	text := fmt.Sprintf("[Error %d] %s", e.code, TranslateCode(e.code))
+	if len(e.message) > 0 {
+		text += ": " + e.message
+	}
+	return text
+}
+
+func (e *Error) Message() string {
+	return e.message
 }
 
 func (e *Error) Code() Code {
@@ -87,7 +96,11 @@ func (e *Error) Convert(conversion map[Code]Code) *Error {
 }
 
 func NewError(code Code) *Error {
-	return &Error{code}
+	return &Error{code, ""}
+}
+
+func NewErrorMessage(code Code, message string) *Error {
+	return &Error{code, message}
 }
 
 func DefaultError() *Error {

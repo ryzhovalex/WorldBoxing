@@ -1,13 +1,26 @@
 package quco
 
 import (
+	"fmt"
+	"strings"
+	"worldboxing/lib/database"
 	"worldboxing/lib/quco/tokens"
 	"worldboxing/lib/utils"
 )
 
+type Code = utils.Code
+
+const (
+	CodeUnsupportedAction      Code = 1
+	CodeCollectionParsing      Code = 2
+	CodeEmptyActionBody        Code = 3
+	CodeSqlQueryExecutionError Code = 4
+	CodeTokenParsingError      Code = 5
+)
+
 type Unit = map[string]any
 type Response struct {
-	Units []*Unit
+	Units *[]Unit
 	// How many objects were affected.
 	// For create: number of created objects.
 	// For get: length of `Units`.
@@ -49,7 +62,8 @@ func lexical(query string) []*tokens.Token {
 		// buffer to token, empty the buffer and move on. But not for string
 		// content.
 		instructionEnding := x == '\n' || x == '(' || x == ')' || x == '"' || x == '=' || x == '.' || x == ',' || x == ' ' || x == '\t'
-		if !quoteOpened && instructionEnding {
+		floatBuilding := x == '.' && utils.IsInt(buf)
+		if !floatBuilding && !quoteOpened && instructionEnding {
 			// Write non-empty buffer.
 			if len(utils.RemoveSpaces(buf)) > 0 {
 				result = append(result, lexicalParseChunk(buf))
@@ -57,7 +71,7 @@ func lexical(query string) []*tokens.Token {
 			buf = ""
 			// Whitespaces are ignored everywhere except inside
 			// strings.
-			if x != ' ' && x != '\t' && x != '\n' {
+			if x != ' ' && x != '\t' {
 				result = append(
 					result,
 					lexicalParseChunk(stringX),
@@ -73,6 +87,9 @@ func lexical(query string) []*tokens.Token {
 	// Save rest of the buffer as token if it's not empty.
 	if len(utils.RemoveSpaces(buf)) > 0 {
 		result = append(result, lexicalParseChunk(buf))
+	}
+	if result[len(result)-1].Type != tokens.EndInstruction {
+		result = append(result, &tokens.Token{Type: tokens.EndInstruction, Value: "\n"})
 	}
 	return result
 }
@@ -96,7 +113,133 @@ func lexicalParseChunk(chunk string) *tokens.Token {
 	}
 }
 
+type QucoAction int
+
+const (
+	ActionGet QucoAction = iota
+	ActionCreate
+	ActionSet
+	ActionUpdate
+	ActionDelete
+)
+
 func interpretation(lexicalTokens []*tokens.Token) (*Response, *utils.Error) {
-	response := Response{}
-	return &response, nil
+	if len(lexicalTokens) == 0 {
+		return &Response{}, nil
+	}
+
+	var action QucoAction
+	switch lexicalTokens[0].Type {
+	case tokens.Get:
+		action = ActionGet
+	default:
+		return nil, utils.NewError(CodeUnsupportedAction)
+	}
+
+	if len(lexicalTokens) < 2 || lexicalTokens[1].Type != tokens.Name {
+		return nil, utils.NewError(CodeCollectionParsing)
+	}
+	collection := lexicalTokens[1].Value
+
+	if len(lexicalTokens) < 3 {
+		return nil, utils.NewError(CodeEmptyActionBody)
+	}
+
+	switch action {
+	case ActionGet:
+		return get(collection, lexicalTokens[2:])
+	default:
+		return nil, utils.NewError(CodeUnsupportedAction)
+	}
+}
+
+func get(
+	collection string,
+	bodyTokens []*tokens.Token,
+) (*Response, *utils.Error) {
+	units := &[]Unit{}
+	whereQuery, e := generateWhereQuery(bodyTokens)
+	if e != nil {
+		return nil, e
+	}
+	sqlQuery := fmt.Sprintf(`SELECT * FROM %s WHERE %s`, collection, whereQuery)
+	be := database.Tx.Select(units, sqlQuery, nil)
+	if be != nil {
+		return nil, utils.NewError(CodeSqlQueryExecutionError)
+	}
+
+	response := &Response{
+		Units:    units,
+		Affected: len(*units),
+	}
+	return response, nil
+}
+
+func generateWhereQuery(bodyTokens []*tokens.Token) (string, *utils.Error) {
+	conditions := []string{}
+	instructionKey := ""
+	instructionValue := ""
+	// By default all instructions are assignment (or equality in case of GET).
+	instructionComparisonType := tokens.Assignment
+	instructionComparisonTypeSet := false
+	dotTokenLast := false
+	assignmentTokenAppeared := false
+
+	for _, t := range bodyTokens {
+		if t.Type == tokens.Name {
+			if instructionKey != "" {
+				instructionKey += "." + t.Value
+			} else {
+				instructionKey = t.Value
+			}
+		}
+		if tokens.IsComparisonToken(t) {
+			if instructionComparisonTypeSet {
+				return "", utils.NewErrorMessage(CodeTokenParsingError, "Duplicate comparison instruction.")
+			}
+			if len(instructionKey) == 0 {
+				return "", utils.NewErrorMessage(CodeTokenParsingError, "Cannot assign comparsion token without active instruction.")
+			}
+			if !dotTokenLast {
+				return "", utils.NewErrorMessage(CodeTokenParsingError, "Comparison token without dot operator.")
+			}
+			if assignmentTokenAppeared {
+				return "", utils.NewErrorMessage(CodeTokenParsingError, "Invalid assignment token placement.")
+			}
+			instructionComparisonTypeSet = true
+			instructionComparisonType = t.Type
+		} else {
+			instructionComparisonTypeSet = false
+		}
+		if t.Type == tokens.Assignment {
+			if assignmentTokenAppeared {
+				return "", utils.NewErrorMessage(CodeTokenParsingError, "Duplicate assignment token.")
+			}
+			if instructionKey == "" {
+				return "", utils.NewErrorMessage(CodeTokenParsingError, "Invalid instruction target.")
+			}
+			assignmentTokenAppeared = true
+			continue
+		}
+		if assignmentTokenAppeared {
+			// Treat the following tokens as the right side of the instruction.
+			if (t.Type == tokens.ContainerOpen || t.Type == tokens.ContainerClose || t.Type == tokens.Comma) && instructionComparisonType != tokens.In {
+				return "", utils.NewErrorMessage(CodeTokenParsingError, "Containers are allowed only for IN comparison.")
+			}
+		}
+		if t.Type == tokens.EndInstruction {
+			if instructionKey == "" || instructionValue == "" || !assignmentTokenAppeared {
+				return "", utils.NewErrorMessage(CodeTokenParsingError, "Invalid instruction.")
+			}
+			instructionKey = ""
+			instructionValue = ""
+			assignmentTokenAppeared = false
+			dotTokenLast = false
+			continue
+		}
+
+		dotTokenLast = t.Type == tokens.Dot
+	}
+
+	return strings.Join(conditions, " AND "), nil
 }

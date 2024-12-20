@@ -22,6 +22,7 @@ var TextToTokenType = map[string]Type{
 	")":      ContainerClose,
 	".":      Dot,
 	",":      Comma,
+	"\n":     EndInstruction,
 }
 
 const (
@@ -50,9 +51,14 @@ const (
 	ContainerClose
 	Dot
 	Comma
+	EndInstruction
 )
 
 type Token struct {
 	Type  Type
 	Value string
+}
+
+func IsComparisonToken(token *Token) bool {
+	return token.Type == Assignment || token.Type == Ne || token.Type == Lt || token.Type == Le || token.Type == Gt || token.Type == Ge || token.Type == In
 }

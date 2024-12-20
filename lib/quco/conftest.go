@@ -7,8 +7,6 @@ import (
 
 func compareTokens(t *testing.T, expectedTokens []*tokens.Token, realTokens []*tokens.Token) {
 	if len(realTokens) != len(expectedTokens) {
-		t.Log(realTokens[2].Type)
-		t.Log(realTokens[2].Value)
 		t.FailNow()
 	}
 	for i, token := range realTokens {

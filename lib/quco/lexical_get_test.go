@@ -20,6 +20,10 @@ Name="GET"`)
 				Value: "Person",
 			},
 			{
+				Type:  tokens.EndInstruction,
+				Value: "\n",
+			},
+			{
 				Type:  tokens.Name,
 				Value: "Name",
 			},
@@ -38,6 +42,10 @@ Name="GET"`)
 			{
 				Type:  tokens.Quote,
 				Value: "\"",
+			},
+			{
+				Type:  tokens.EndInstruction,
+				Value: "\n",
 			},
 		},
 		realTokens,
@@ -59,6 +67,10 @@ Age=100`)
 				Value: "Person",
 			},
 			{
+				Type:  tokens.EndInstruction,
+				Value: "\n",
+			},
+			{
 				Type:  tokens.Name,
 				Value: "Age",
 			},
@@ -69,6 +81,10 @@ Age=100`)
 			{
 				Type:  tokens.Integer,
 				Value: "100",
+			},
+			{
+				Type:  tokens.EndInstruction,
+				Value: "\n",
 			},
 		},
 		realTokens,
@@ -88,6 +104,10 @@ Salary.IN=(100, 200)`)
 			{
 				Type:  tokens.Name,
 				Value: "Person",
+			},
+			{
+				Type:  tokens.EndInstruction,
+				Value: "\n",
 			},
 			{
 				Type:  tokens.Name,
@@ -124,6 +144,49 @@ Salary.IN=(100, 200)`)
 			{
 				Type:  tokens.ContainerClose,
 				Value: ")",
+			},
+			{
+				Type:  tokens.EndInstruction,
+				Value: "\n",
+			},
+		},
+		realTokens,
+	)
+}
+
+func TestFloatOk(t *testing.T) {
+	realTokens := lexical(`GET Person
+Salary=10.5`)
+	compareTokens(
+		t,
+		[]*tokens.Token{
+			{
+				Type:  tokens.Get,
+				Value: "GET",
+			},
+			{
+				Type:  tokens.Name,
+				Value: "Person",
+			},
+			{
+				Type:  tokens.EndInstruction,
+				Value: "\n",
+			},
+			{
+				Type:  tokens.Name,
+				Value: "Salary",
+			},
+			{
+				Type:  tokens.Assignment,
+				Value: "=",
+			},
+			{
+				Type:  tokens.Float,
+				Value: "10.5",
+			},
+			{
+				Type:  tokens.EndInstruction,
+				Value: "\n",
 			},
 		},
 		realTokens,

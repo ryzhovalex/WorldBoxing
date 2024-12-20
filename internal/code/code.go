@@ -5,12 +5,11 @@ import "worldboxing/lib/utils"
 type Code = utils.Code
 
 const (
-	Hello      = -1
 	Ok    Code = 0
-	Error      = 1
+	Error Code = 1
 
 	// CLI
-	CliCallParsing              = 2
-	CliCommandAlreadyRegistered = 3
-	CliNoSuchCommand            = 4
+	CliCallParsingError              = 2
+	CliAlreadyRegisteredCommandError = 3
+	CliMissingCommandError           = 4
 )

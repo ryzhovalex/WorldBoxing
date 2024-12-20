@@ -29,3 +29,6 @@ age.LT=18
 item.type.NE="permission"
 THEN delete
 ```
+
+## Known issues
+* All containers (enclosed in `()`) must be placed in single line, or the interpreter will treat them as separate instructions, and thus will throw an error.

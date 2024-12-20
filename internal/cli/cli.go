@@ -46,7 +46,7 @@ func Start() {
 func RegisterCommand(command string, function CommandFunction) *utils.Error {
 	_, ok := commands[strings.ToLower(command)]
 	if ok {
-		return utils.NewError(code.CliCommandAlreadyRegistered)
+		return utils.NewError(code.CliAlreadyRegisteredCommandError)
 	}
 	commands[command] = function
 	return nil
@@ -55,7 +55,7 @@ func RegisterCommand(command string, function CommandFunction) *utils.Error {
 func executeCall(call *Call) *utils.Error {
 	function, ok := commands[strings.ToLower(call.Command)]
 	if !ok {
-		return utils.NewError(code.CliNoSuchCommand)
+		return utils.NewError(code.CliMissingCommandError)
 	}
 	var ctx = Context{
 		Call:  call,
@@ -84,13 +84,13 @@ func parseInput(input string) (*Call, *utils.Error) {
 
 	fields := strings.Fields(input)
 	if len(fields) == 0 {
-		return nil, utils.NewError(code.CliCallParsing)
+		return nil, utils.NewError(code.CliCallParsingError)
 	}
 	for i, field := range fields {
 		if i == 0 {
 			command := field
 			if !CommandRegex.MatchString(command) {
-				return nil, utils.NewError(code.CliCallParsing)
+				return nil, utils.NewError(code.CliCallParsingError)
 			}
 			call.Command = command
 			continue
@@ -98,11 +98,11 @@ func parseInput(input string) (*Call, *utils.Error) {
 		if strings.Contains(field, "=") {
 			parts := strings.Split(field, "=")
 			if len(parts) != 2 {
-				return nil, utils.NewError(code.CliCallParsing)
+				return nil, utils.NewError(code.CliCallParsingError)
 			}
 			kwargKey := parts[0]
 			if !CommandRegex.MatchString(kwargKey) {
-				return nil, utils.NewError(code.CliCallParsing)
+				return nil, utils.NewError(code.CliCallParsingError)
 			}
 			call.Kwargs[kwargKey] = parts[1]
 			continue
@@ -122,8 +122,12 @@ func (w *Writer) Write(data []byte) (int, error) {
 }
 
 func throwError(e *utils.Error) {
-	color.New(color.FgRed).Fprint(writer, fmt.Sprintf("[Error %d] ", e.Code()))
-	write(fmt.Sprintf("%s \n", utils.TranslateCode(e.Code())))
+	color.New(color.FgRed).Fprint(writer, fmt.Sprintf("[Error %d]", e.Code()))
+	text := fmt.Sprintf(" %s", utils.TranslateCode(e.Code()))
+	if len(e.Message()) > 0 {
+		text += ": " + e.Message()
+	}
+	write(text + "\n")
 }
 
 func write(data string) {
