@@ -13,5 +13,5 @@ test t="":
 
 check: lint test
 
-migration *t:
+db *t:
     @ {{dbmate}} -s "Database/SqliteSchema.sql" -d "Database/Migrations" {{t}}

@@ -1,21 +1,18 @@
--- migrate:up
+CREATE TABLE IF NOT EXISTS "schema_migrations" (version varchar(128) primary key);
 CREATE TABLE PersonType(
     Id INTEGER PRIMARY KEY,
     TypeKey TEXT UNIQUE NOT NULL
 );
-
 CREATE TABLE Sponsorship(
     Id INTEGER PRIMARY KEY,
     PersonId INTEGER NOT NULL REFERENCES Person(Id),
     SponsorId INTEGER NOT NULL REFERENCES Company(Id)
 );
-
 CREATE TABLE Company(
     Id INTEGER PRIMARY KEY,
     CompanyName TEXT UNIQUE NOT NULL,
     NetWorth FLOAT NOT NULL DEFAULT 0.0
 );
-
 CREATE TABLE FighterStyle(
     Id INTEGER PRIMARY KEY,
     -- In-Fighter
@@ -25,7 +22,6 @@ CREATE TABLE FighterStyle(
     -- https://en.wikipedia.org/wiki/Boxing_styles_and_technique
     StyleKey TEXT UNIQUE NOT NULL
 );
-
 CREATE TABLE FighterSkills(
     Id INTEGER PRIMARY KEY,
     PersonId INTEGER REFERENCES Person(Id),
@@ -38,7 +34,6 @@ CREATE TABLE FighterSkills(
 
     StyleId INTEGER REFERENCES FighterStyle(Id)
 );
-
 CREATE TABLE Person(
     Id INTEGER PRIMARY KEY,
     TypeId INTEGER NOT NULL REFERENCES PersonType(Id),
@@ -52,22 +47,18 @@ CREATE TABLE Person(
     -- Money earned from any sources: fights, sponsorships, side busineses.
     TotalMoneyEarned FLOAT
 );
-
 CREATE TABLE Timeline(
     Id INTEGER PRIMARY KEY,
     CurrentDay INTEGER
 );
-
 CREATE TABLE StateEventType(
     Id INTEGER PRIMARY KEY,
     TypeKey TEXT UNIQUE NOT NULL
 );
-
 CREATE TABLE World(
     Id INTEGER PRIMARY KEY,
     LastProcessedStateEventId INTEGER REFERENCES StateEvent(Id)
 );
-
 CREATE TABLE StateEvent(
     -- Id serves as StateEvent order.
     Id INTEGER PRIMARY KEY,
@@ -76,30 +67,25 @@ CREATE TABLE StateEvent(
     TimeMs INTEGER NOT NULL,
     TimelineDay INTEGER NOT NULL
 );
-
 CREATE TABLE RoundEndType(
     Id INTEGER PRIMARY KEY,
     TypeKey TEXT UNIQUE NOT NULL
 );
-
 CREATE TABLE Arena(
     Id INTEGER PRIMARY KEY,
     ArenaName TEXT UNIQUE NOT NULL,
     CityId INTEGER NOT NULL REFERENCES City(Id)
 );
-
 CREATE TABLE City(
     Id INTEGER PRIMARY KEY,
     CityName TEXT UNIQUE NOT NULL,
     CountryId INTEGER NOT NULL REFERENCES Country(Id),
     Population INTEGER
 );
-
 CREATE TABLE Country(
     Id INTEGER PRIMARY KEY,
     CountryName TEXT UNIQUE NOT NULL
 );
-
 CREATE TABLE Fight(
     Id INTEGER PRIMARY KEY,
     TimelineDay INTEGER,
@@ -116,7 +102,6 @@ CREATE TABLE Fight(
     -- Prize issued in any case to every fighter.
     ParticipancePrize FLOAT
 );
-
 CREATE TABLE FightRound(
     Id INTEGER PRIMARY KEY,
     FightId INTEGER NOT NULL REFERENCES Fight(Id),
@@ -130,6 +115,6 @@ CREATE TABLE FightRound(
     -- If null: still going.
     EndTypeId INTEGER REFERENCES RoundEndType(Id)
 );
-
--- migrate:down
-
+-- Dbmate schema migrations
+INSERT INTO "schema_migrations" (version) VALUES
+  ('20241217214956');
