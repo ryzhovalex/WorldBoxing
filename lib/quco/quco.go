@@ -254,6 +254,7 @@ func generateWhereQuery(bodyTokens []*tokens.Token) (string, *utils.Error) {
 		}
 		if t.Type == tokens.EndInstruction {
 			if instructionKey == "" || instructionValue == "" || !assignmentTokenAppeared {
+				print(instructionValue, "\n")
 				return "", utils.NewError(CodeTokenParsingError, "Invalid instruction.")
 			}
 			instructionKey = ""
