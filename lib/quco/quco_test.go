@@ -314,6 +314,128 @@ func TestInterpretationGetNameAndAgeOk(t *testing.T) {
 SELECT * FROM Person
 WHERE Name = 'John' AND Age >= 18
 `
+	if strings.TrimSpace(query) != strings.TrimSpace(expectedQuery) {
+		t.FailNow()
+	}
+}
+
+func TestInterpretationGetNameAndInCityOk(t *testing.T) {
+	lexicalTokens := []*tokens.Token{
+		{
+			Type:  tokens.Get,
+			Value: "GET",
+		},
+		{
+			Type:  tokens.Name,
+			Value: "Person",
+		},
+		{
+			Type:  tokens.EndInstruction,
+			Value: "\n",
+		},
+		{
+			Type:  tokens.Name,
+			Value: "Name",
+		},
+		{
+			Type:  tokens.Assignment,
+			Value: "=",
+		},
+		{
+			Type:  tokens.Quote,
+			Value: "\"",
+		},
+		{
+			Type:  tokens.Name,
+			Value: "John",
+		},
+		{
+			Type:  tokens.Quote,
+			Value: "\"",
+		},
+		{
+			Type:  tokens.EndInstruction,
+			Value: "\n",
+		},
+		{
+			Type:  tokens.Name,
+			Value: "City",
+		},
+		{
+			Type:  tokens.Dot,
+			Value: ".",
+		},
+		{
+			Type:  tokens.In,
+			Value: "IN",
+		},
+		{
+			Type:  tokens.Assignment,
+			Value: "=",
+		},
+		{
+			Type:  tokens.ContainerOpen,
+			Value: "(",
+		},
+		{
+			Type:  tokens.Quote,
+			Value: "\"",
+		},
+		{
+			Type:  tokens.Name,
+			Value: "Trent",
+		},
+		{
+			Type:  tokens.Quote,
+			Value: "\"",
+		},
+		{
+			Type:  tokens.Comma,
+			Value: ",",
+		},
+		{
+			Type:  tokens.Quote,
+			Value: "\"",
+		},
+		{
+			Type:  tokens.Name,
+			Value: "Markart",
+		},
+		{
+			Type:  tokens.Quote,
+			Value: "\"",
+		},
+		{
+			Type:  tokens.Comma,
+			Value: ",",
+		},
+		{
+			Type:  tokens.Quote,
+			Value: "\"",
+		},
+		{
+			Type:  tokens.Name,
+			Value: "Solutide",
+		},
+		{
+			Type:  tokens.Quote,
+			Value: "\"",
+		},
+		{
+			Type:  tokens.ContainerClose,
+			Value: ")",
+		},
+		{
+			Type:  tokens.EndInstruction,
+			Value: "\n",
+		},
+	}
+	query, e := interpretation(lexicalTokens)
+	utils.Unwrap(e)
+	expectedQuery := `
+SELECT * FROM Person
+WHERE Name = 'John' AND City IN ('Trent','Markart','Solutide')
+`
 	print(utils.WrapString(query, "`"))
 	if strings.TrimSpace(query) != strings.TrimSpace(expectedQuery) {
 		t.FailNow()
