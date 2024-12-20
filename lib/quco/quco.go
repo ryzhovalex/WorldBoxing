@@ -25,22 +25,46 @@ func Execute(query string) (*Response, *utils.Error) {
 func lexical(query string) []*tokens.Token {
 	result := []*tokens.Token{}
 	buf := ""
+	quoteOpened := false
 	for _, x := range query {
-		// If encounter instruction ending operators, we convert existing
-		// buffer to token, empty the buffer and move on.
-		if x == '\n' || x == '(' || x == ')' || x == '"' {
-			stringX := string(x)
+		stringX := string(x)
+		if quoteOpened && x == '"' {
+			// Add string buffer as Name token, don't trim spaces.
+			if len(buf) > 0 {
+				result = append(result, &tokens.Token{
+					Type:  tokens.Name,
+					Value: buf,
+				})
+			}
+			buf = ""
+			// Add quote token.
 			result = append(
 				result,
 				lexicalParseChunk(stringX),
 			)
+			quoteOpened = false
+			continue
+		}
+		// If encounter instruction ending operators, we convert existing
+		// buffer to token, empty the buffer and move on. But not for string
+		// content.
+		instructionEnding := x == '\n' || x == '(' || x == ')' || x == '"' || x == '='
+		if !quoteOpened && instructionEnding {
+			// Write non-empty buffer.
 			if len(strings.TrimSpace(buf)) > 0 {
 				result = append(result, lexicalParseChunk(buf))
 			}
 			buf = ""
+			result = append(
+				result,
+				lexicalParseChunk(stringX),
+			)
+			if x == '"' {
+				quoteOpened = !quoteOpened
+			}
 			continue
 		}
-		buf += string(x)
+		buf += stringX
 	}
 	return result
 }
@@ -48,7 +72,6 @@ func lexical(query string) []*tokens.Token {
 func lexicalParseChunk(chunk string) *tokens.Token {
 	var tokenType tokens.Type = tokens.Name
 
-	chunk = strings.TrimSpace(chunk)
 	tokenType, ok := tokens.TextToTokenType[chunk]
 	if !ok {
 		if utils.IsFloat(chunk) {

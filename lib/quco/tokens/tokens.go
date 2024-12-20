@@ -3,6 +3,7 @@ package tokens
 type Type int
 
 var TextToTokenType = map[string]Type{
+	"GET":    Get,
 	"CREATE": Create,
 	"SET":    Set,
 	"DELETE": Delete,
@@ -21,16 +22,18 @@ var TextToTokenType = map[string]Type{
 	")":      ContainerClose,
 	".":      Dot,
 	",":      Comma,
+	"\n":     Newline,
 }
 
 const (
-	Get Type = iota
+	Newline Type = iota
+	Name
+	Get
 	Create
 	Set
 	Delete
 	Then
 	// Generic name, could be a field name, or the string.
-	Name
 	// We don't have EQ operator since by default all operations are equality
 	// (if applicable). Operator `=` in Quco is Assignment.
 	Assignment
@@ -47,7 +50,6 @@ const (
 	False
 	ContainerOpen
 	ContainerClose
-	Newline
 	Dot
 	Comma
 )
