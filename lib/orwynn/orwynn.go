@@ -70,7 +70,7 @@ var state *State
 func Init(transports map[string]Transport) *utils.Error {
 	_, ok := transports["INNER"]
 	if ok {
-		return utils.NewError(CodeCannotReferenceInnerTransport)
+		return utils.NewError(CodeCannotReferenceInnerTransport, "")
 	}
 	state = &State{
 		Transports:          transports,
@@ -150,7 +150,7 @@ func distributeMessageContextToTargetConnections(ctx *MessageContext) {
 // Rest is to the body.
 func newMessage(raw []byte) (*Message, *utils.Error) {
 	if len(raw) < 2 {
-		return nil, utils.NewError(CodeIncorrectMessageStructure)
+		return nil, utils.NewError(CodeIncorrectMessageStructure, "")
 	}
 	rawCode := raw[:2]
 	var code Code
@@ -170,7 +170,7 @@ func newMessage(raw []byte) (*Message, *utils.Error) {
 // Publish a message body to the bus.
 func Publish(code Code, body MessageBody, targets []Connection) *utils.Error {
 	if len(targets) == 0 {
-		return utils.NewError(CodePublishWithoutTargetConnections)
+		return utils.NewError(CodePublishWithoutTargetConnections, "")
 	}
 
 	message := Message{

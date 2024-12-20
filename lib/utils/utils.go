@@ -92,19 +92,15 @@ func (e *Error) Convert(conversion map[Code]Code) *Error {
 	if !ok {
 		return DefaultError()
 	}
-	return NewError(target)
+	return NewError(target, "")
 }
 
-func NewError(code Code) *Error {
-	return &Error{code, ""}
-}
-
-func NewErrorMessage(code Code, message string) *Error {
+func NewError(code Code, message string) *Error {
 	return &Error{code, message}
 }
 
 func DefaultError() *Error {
-	return NewError(1)
+	return NewError(1, "")
 }
 
 type Locale = string
@@ -151,7 +147,7 @@ func LoadTranslationCsv(path string, locale Locale, delimiter rune) *Error {
 
 	for i, record := range records {
 		if len(record) != 2 {
-			return NewError(CodeError)
+			return NewError(CodeError, "")
 		}
 		if i == 0 {
 			continue
@@ -171,11 +167,11 @@ func Translate(key TranslationKey, args ...any) string {
 	key = strings.ToUpper(key)
 	localeMap, ok := translationMap[translationLocale]
 	if !ok {
-		return "???"
+		return key
 	}
 	text, ok := localeMap[strings.ToUpper(key)]
 	if !ok {
-		return "???"
+		return key
 	}
 	return text
 }

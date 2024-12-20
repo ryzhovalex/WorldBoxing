@@ -3,9 +3,10 @@ package quco
 import (
 	"testing"
 	"worldboxing/lib/quco/tokens"
+	"worldboxing/lib/utils"
 )
 
-func TestStringOk(t *testing.T) {
+func TestLexicalGetStringOk(t *testing.T) {
 	realTokens := lexical(`GET Person
 Name="GET"`)
 	compareTokens(
@@ -52,7 +53,7 @@ Name="GET"`)
 	)
 }
 
-func TestIntegerOk(t *testing.T) {
+func TestLexicalGetIntegerOk(t *testing.T) {
 	realTokens := lexical(`GET Person
 Age=100`)
 	compareTokens(
@@ -91,7 +92,7 @@ Age=100`)
 	)
 }
 
-func TestContainerOk(t *testing.T) {
+func TestLexicalGetContainerOk(t *testing.T) {
 	realTokens := lexical(`GET Person
 Salary.IN=(100, 200)`)
 	compareTokens(
@@ -154,7 +155,7 @@ Salary.IN=(100, 200)`)
 	)
 }
 
-func TestFloatOk(t *testing.T) {
+func TestLexicalGetFloatOk(t *testing.T) {
 	realTokens := lexical(`GET Person
 Salary=10.5`)
 	compareTokens(
@@ -191,4 +192,54 @@ Salary=10.5`)
 		},
 		realTokens,
 	)
+}
+
+func TestInterpretationGetNameOk(t *testing.T) {
+	lexicalTokens := []*tokens.Token{
+		{
+			Type:  tokens.Get,
+			Value: "GET",
+		},
+		{
+			Type:  tokens.Name,
+			Value: "Person",
+		},
+		{
+			Type:  tokens.EndInstruction,
+			Value: "\n",
+		},
+		{
+			Type:  tokens.Name,
+			Value: "Name",
+		},
+		{
+			Type:  tokens.Assignment,
+			Value: "=",
+		},
+		{
+			Type:  tokens.Quote,
+			Value: "\"",
+		},
+		{
+			Type:  tokens.Name,
+			Value: "GET",
+		},
+		{
+			Type:  tokens.Quote,
+			Value: "\"",
+		},
+		{
+			Type:  tokens.EndInstruction,
+			Value: "\n",
+		},
+	}
+	query, e := interpretation(lexicalTokens)
+	utils.Unwrap(e)
+	expectedQuery := `
+SELECT * FROM Person
+WHERE Name = 'GET'
+`
+	if query != expectedQuery {
+		t.FailNow()
+	}
 }
