@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -184,4 +186,19 @@ func RemoveFromUnorderedSlice[T any](s []T, i int) []T {
 
 func PowInt(x, y int) int {
 	return int(math.Pow(float64(x), float64(y)))
+}
+
+func IsAlnum(s string) bool {
+	match, _ := regexp.MatchString("^[a-zA-Z0-9]+$", s)
+	return match
+}
+
+func IsFloat(s string) bool {
+	_, err := strconv.ParseFloat(s, 64)
+	return err == nil
+}
+
+func IsInt(s string) bool {
+	_, err := strconv.ParseInt(s, 10, 64)
+	return err == nil
 }

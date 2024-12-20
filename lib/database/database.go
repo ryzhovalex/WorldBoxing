@@ -7,11 +7,11 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-var Db *sqlx.DB
+var D *sqlx.DB
 
 func Init() *utils.Error {
 	var baseError error
-	Db, baseError = sqlx.Connect("sqlite", "./Var/Main.db")
+	D, baseError = sqlx.Connect("sqlite", "./Var/Main.db")
 	if baseError != nil {
 		return utils.DefaultError()
 	}

@@ -9,7 +9,7 @@ lint:
     @ go fmt
 
 test t="":
-    @ if "{{t}}" == "" { go test } else { go test -run {{t}} }
+    @ if "{{t}}" == "" { go test ./... } else { go test -run {{t}} }
 
 check: lint test
 

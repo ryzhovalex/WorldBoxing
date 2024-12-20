@@ -4,11 +4,13 @@ import (
 	"os"
 	"worldboxing/internal/cli"
 	"worldboxing/lib/database"
+	"worldboxing/lib/quco"
 	"worldboxing/lib/utils"
 )
 
 func qucoGet(ctx *cli.Context) *utils.Error {
-	return nil
+	_, e := quco.Execute(ctx.Call.Command)
+	return e
 }
 
 func exit(ctx *cli.Context) *utils.Error {

@@ -122,9 +122,8 @@ func (w *Writer) Write(data []byte) (int, error) {
 }
 
 func throwError(e *utils.Error) {
-	write("[")
-	color.New(color.FgRed).Fprint(writer, fmt.Sprintf("Error %d", e.Code()))
-	write(fmt.Sprintf("] %s\n", utils.TranslateCode(e.Code())))
+	color.New(color.FgRed).Fprint(writer, fmt.Sprintf("[Error %d] ", e.Code()))
+	write(fmt.Sprintf("%s \n", utils.TranslateCode(e.Code())))
 }
 
 func write(data string) {
