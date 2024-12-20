@@ -21,6 +21,27 @@ type CommandFunction func(*Context) *utils.Error
 
 var commands = map[string]CommandFunction{}
 
+func Start() {
+	write("Welcome to World Boxing!\n")
+
+	for {
+		input := read()
+		if len(input) == 0 {
+			continue
+		}
+		call, e := parseInput(input)
+		if e != nil {
+			throwError(e)
+			continue
+		}
+		e = executeCall(call)
+		if e != nil {
+			throwError(e)
+			continue
+		}
+	}
+}
+
 func RegisterCommand(command string, function CommandFunction) *utils.Error {
 	_, ok := commands[strings.ToLower(command)]
 	if ok {
